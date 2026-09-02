@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { HandMetal, AlertCircle } from 'lucide-react';
@@ -41,8 +41,18 @@ export const RegisterPage: React.FC = () => {
       });
       navigate('/user/dashboard', { replace: true });
     } catch (err: any) {
-      const msg = err.response?.data?.detail || 'Failed to create account. Please check your inputs.';
-      setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      if (err.message === 'Network Error' || !err.response) {
+        setError('Cannot connect to backend server. Make sure the backend is running on port 8000.');
+      } else {
+        const detail = err.response?.data?.detail;
+        if (Array.isArray(detail)) {
+          setError(detail.map((d: any) => d.msg || JSON.stringify(d)).join(', '));
+        } else if (typeof detail === 'string') {
+          setError(detail);
+        } else {
+          setError('Failed to create account. Please check your inputs.');
+        }
+      }
     } finally {
       setLoading(false);
     }
