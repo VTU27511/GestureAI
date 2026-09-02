@@ -36,6 +36,15 @@ app.add_middleware(
 app.include_router(api_router)
 app.include_router(ws_router)
 
+@app.get("/")
+def root():
+    return {
+        "name": "GestureAI Platform API",
+        "status": "online",
+        "docs": "/docs",
+        "version": "1.0.0"
+    }
+
 @app.on_event("startup")
 def on_startup():
     try:
