@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 from pathlib import Path
 
@@ -21,6 +21,9 @@ from app.services.auth_service import hash_password
 from sqlalchemy.orm import sessionmaker
 
 def ensure_database_exists():
+    if not DATABASE_URL.startswith("postgresql"):
+        print("[1/3] Using non-PostgreSQL database (e.g. SQLite), skipping PostgreSQL check.")
+        return
     print("[1/3] Checking PostgreSQL database...")
     # Extract host, port, user, password from DATABASE_URL
     # Standard format: postgresql://postgres:ranjith@localhost:5432/gestureai_db
