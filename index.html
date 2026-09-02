@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GATEway AI - Ultimate GATE Exam Prep Assistant</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- KaTeX for beautiful math equations -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Marked.js for markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Container App -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <i data-lucide="cpu" class="logo-icon"></i>
+        </div>
+        <div class="brand-text">
+          <h1>GATEway <span>AI</span></h1>
+          <p>GATE Prep Companion</p>
+        </div>
+      </div>
+
+      <div class="branch-selector-container">
+        <label for="branch-select">Engineering Branch</label>
+        <div class="custom-select-wrapper">
+          <select id="branch-select">
+            <option value="CS" selected>Computer Science (CS)</option>
+            <option value="EC">Electronics & Comm (EC)</option>
+            <option value="EE">Electrical Eng (EE)</option>
+            <option value="ME">Mechanical Eng (ME)</option>
+            <option value="CE">Civil Eng (CE)</option>
+          </select>
+          <i data-lucide="chevron-down" class="select-arrow"></i>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="#" class="nav-link active" data-target="dashboard">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-target="chat">
+              <i data-lucide="message-square"></i>
+              <span>GATE Guru Chat</span>
+              <span class="live-badge">AI</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-target="practice">
+              <i data-lucide="graduation-cap"></i>
+              <span>Practice Arena</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-target="formulas">
+              <i data-lucide="binary"></i>
+              <span>Formula Hub</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-target="planner">
+              <i data-lucide="calendar"></i>
+              <span>Study Planner</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="api-status-card" id="api-status-btn">
+          <div class="status-indicator-dot" id="status-dot"></div>
+          <div class="status-details">
+            <p class="status-title">Gemini API Connection</p>
+            <p class="status-desc" id="api-status-text">Not Configured</p>
+          </div>
+          <i data-lucide="settings" class="settings-btn-icon"></i>
+        </div>
+        <p class="version-tag">Version 1.2.0 • Antigravity AI</p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Navbar -->
+      <header class="top-navbar">
+        <div class="nav-search">
+          <i data-lucide="search"></i>
+          <input type="text" placeholder="Search concepts, formulas, questions..." id="global-search">
+        </div>
+        <div class="header-actions">
+          <div class="streak-badge">
+            <i data-lucide="flame" class="streak-icon"></i>
+            <span class="streak-count" id="streak-counter">3 Days Streak</span>
+          </div>
+          <div class="profile-summary" id="profile-dropdown-btn">
+            <div class="profile-avatar">GC</div>
+            <div class="profile-info">
+              <p class="profile-name">GATE Aspirant</p>
+              <p class="profile-rank">Target Rank: Under 100</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Screens Container -->
+      <div class="screen-viewports">
+
+        <!-- 1. DASHBOARD SCREEN -->
+        <section id="dashboard" class="screen-section active-screen">
+          <div class="dashboard-banner">
+            <div class="banner-content">
+              <h2>Master the GATE Exam with AI Guidance</h2>
+              <p>Practice simulated questions, get instant formula breakdowns, and build a custom preparation schedule tailored to your schedule.</p>
+              <div class="banner-actions">
+                <button class="btn btn-primary" onclick="switchTab('chat')">
+                  <i data-lucide="message-square"></i> Chat with GATE Guru
+                </button>
+                <button class="btn btn-secondary" onclick="switchTab('practice')">
+                  <i data-lucide="play"></i> Start Daily Practice
+                </button>
+              </div>
+            </div>
+            <div class="banner-graphic">
+              <div class="floating-orb purple"></div>
+              <div class="floating-orb blue"></div>
+              <div class="code-isometric">
+                <pre><code>T(n) = 2T(n/2) + O(n)
+O(n log n)</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-wrapper blue">
+                <i data-lucide="check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <span class="stat-label">Questions Solved</span>
+                <h3 class="stat-value" id="stats-solved">0/10</h3>
+              </div>
+              <div class="stat-trend positive">
+                <span id="stats-solved-percentage">0%</span> Completed
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrapper green">
+                <i data-lucide="award"></i>
+              </div>
+              <div class="stat-content">
+                <span class="stat-label">Accuracy Rate</span>
+                <h3 class="stat-value" id="stats-accuracy">N/A</h3>
+              </div>
+              <div class="stat-trend positive">
+                Based on attempts
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrapper purple">
+                <i data-lucide="zap"></i>
+              </div>
+              <div class="stat-content">
+                <span class="stat-label">AI Queries Answered</span>
+                <h3 class="stat-value" id="stats-queries">0</h3>
+              </div>
+              <div class="stat-trend neutral">
+                Unlimited assistance
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrapper orange">
+                <i data-lucide="hourglass"></i>
+              </div>
+              <div class="stat-content">
+                <span class="stat-label">Study Commitment</span>
+                <h3 class="stat-value" id="stats-hours">4 hrs/day</h3>
+              </div>
+              <div class="stat-trend neutral" id="stats-planner-status">
+                Planner not set
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart & Tasks Section -->
+          <div class="dashboard-split-layout">
+            <div class="glass-card chart-card">
+              <div class="card-header">
+                <h3>Subject-wise Prep Status</h3>
+                <p>Diagnostic analysis of correct answers by area</p>
+              </div>
+              <div class="chart-container">
+                <canvas id="masteryChart"></canvas>
+              </div>
+            </div>
+
+            <div class="glass-card tasks-card">
+              <div class="card-header">
+                <h3>Preparation Checklist</h3>
+                <p>Key milestones for GATE success</p>
+              </div>
+              <div class="checklist-container">
+                <div class="checklist-item done">
+                  <div class="check-box"><i data-lucide="check"></i></div>
+                  <div class="check-label">
+                    <p class="task-title">Select Engineering Branch</p>
+                    <p class="task-desc">Set focus area to Computer Science (CS)</p>
+                  </div>
+                </div>
+                <div class="checklist-item" id="task-api">
+                  <div class="check-box" onclick="openApiModal()"><i data-lucide="settings"></i></div>
+                  <div class="check-label">
+                    <p class="task-title">Configure Gemini AI Key</p>
+                    <p class="task-desc">Unlock unlimited personalized tutor explanations</p>
+                  </div>
+                </div>
+                <div class="checklist-item" id="task-quiz">
+                  <div class="check-box" onclick="switchTab('practice')"><i data-lucide="play"></i></div>
+                  <div class="check-label">
+                    <p class="task-title">Complete 1st Mock Practice Session</p>
+                    <p class="task-desc">Take a diagnostic 5-question quick quiz</p>
+                  </div>
+                </div>
+                <div class="checklist-item" id="task-planner">
+                  <div class="check-box" onclick="switchTab('planner')"><i data-lucide="calendar"></i></div>
+                  <div class="check-label">
+                    <p class="task-title">Generate Study Planner Schedule</p>
+                    <p class="task-desc">Input your daily availability for a custom timeline</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. AI CHAT SCREEN -->
+        <section id="chat" class="screen-section">
+          <div class="chat-layout">
+            <!-- Left Panel: Quick Prompts & Settings -->
+            <div class="chat-sidebar-panel">
+              <div class="glass-card chat-helper-card">
+                <h3><i data-lucide="sparkles"></i> Prompt Assistant</h3>
+                <p>Click any quick prompt below to start an interactive lesson or solve a problem with GATE Guru.</p>
+                
+                <div class="quick-prompts-list">
+                  <button class="prompt-chip" data-prompt="Explain 3NF vs BCNF database normalization with a clear relation example.">
+                    <span>Explain 3NF vs BCNF</span>
+                    <i data-lucide="arrow-right"></i>
+                  </button>
+                  <button class="prompt-chip" data-prompt="Show me how to solve recurrence relation T(n) = 2T(n/2) + n using Master's Theorem.">
+                    <span>Solve T(n) = 2T(n/2) + n</span>
+                    <i data-lucide="arrow-right"></i>
+                  </button>
+                  <button class="prompt-chip" data-prompt="Explain sliding window protocol efficiency formula and how propagation delay impacts it.">
+                    <span>Sliding Window Efficiency</span>
+                    <i data-lucide="arrow-right"></i>
+                  </button>
+                  <button class="prompt-chip" data-prompt="Explain Dijkstra's single source shortest path algorithm step-by-step with an example graph.">
+                    <span>Explain Dijkstra's Algorithm</span>
+                    <i data-lucide="arrow-right"></i>
+                  </button>
+                  <button class="prompt-chip" data-prompt="Give me a quick 3-question mini-quiz on Operating Systems CPU scheduling.">
+                    <span>Generate OS scheduling quiz</span>
+                    <i data-lucide="arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tip Card -->
+              <div class="glass-card chat-tips-card">
+                <h4><i data-lucide="info" class="text-indigo"></i> Tip for Math Formulas</h4>
+                <p>GATE Guru natively renders mathematical syntax. Wrap math equations in <code>$$ ... $$</code> for blocks or <code>$ ... $</code> for inline expressions.</p>
+              </div>
+            </div>
+
+            <!-- Right Panel: The actual Chat -->
+            <div class="chat-main-panel glass-card">
+              <div class="chat-header">
+                <div class="chat-agent-info">
+                  <div class="agent-avatar">
+                    <i data-lucide="bot"></i>
+                  </div>
+                  <div>
+                    <h3>GATE Guru</h3>
+                    <p class="agent-status"><span class="pulse-indicator"></span> Ready to teach & solve</p>
+                  </div>
+                </div>
+                <div class="chat-actions" style="display: flex; gap: 0.5rem;">
+                  <div class="custom-select-wrapper persona-select-wrapper" style="width: 170px;">
+                    <select id="persona-select" title="Choose AI Persona">
+                      <option value="general" selected>GATE Specialist</option>
+                      <option value="math">Math & Formulas</option>
+                      <option value="code">Code & Compiler</option>
+                      <option value="strategy">Exam Strategist</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="select-arrow" style="right: 0.5rem; width: 14px; height: 14px;"></i>
+                  </div>
+                  <button class="btn-icon" id="clear-chat-btn" title="Clear Chat History">
+                    <i data-lucide="trash-2"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="chat-messages" id="chat-messages-container">
+                <!-- Welcome Message -->
+                <div class="message system-message">
+                  <div class="msg-avatar">
+                    <i data-lucide="bot"></i>
+                  </div>
+                  <div class="msg-bubble">
+                    <p>Namaste! I am your <strong>GATE Guru AI Prep Assistant</strong>. 🎓</p>
+                    <p>I can help you review complex engineering concepts, solve numerical answer type (NAT) problems, explain previous year questions, or quiz you on any subject.</p>
+                    <div class="api-nag-box" id="chat-api-nag">
+                      <p>⚠️ <strong>Note:</strong> You are currently using the offline tutoring engine. Configure your <strong>Gemini API Key</strong> in settings to unlock unlimited, live reasoning on any custom problem.</p>
+                      <button class="btn btn-sm btn-primary" onclick="openApiModal()">Enter API Key</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Input Area -->
+              <div class="chat-input-container">
+                <textarea placeholder="Ask a question about syllabus, equations, or paste a GATE problem here..." id="chat-input" rows="1"></textarea>
+                <div class="chat-input-controls">
+                  <div class="input-formatting-helpers">
+                    <button class="control-btn" onclick="insertMathHelper('$$')" title="Insert Block Math $$">
+                      <span class="math-sym">$$</span>
+                    </button>
+                    <button class="control-btn" onclick="insertMathHelper('$')" title="Insert Inline Math $">
+                      <span class="math-sym">$</span>
+                    </button>
+                  </div>
+                  <button class="btn btn-primary btn-send" id="send-chat-btn">
+                    <span>Send Query</span>
+                    <i data-lucide="send"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. PRACTICE ARENA SCREEN -->
+        <section id="practice" class="screen-section">
+          <div class="practice-layout">
+            <!-- Filter Sidebar -->
+            <div class="practice-filters glass-card">
+              <h3>Practice Arena</h3>
+              <p class="section-desc">Select subject areas to hone your skills. Answer MCQs, MSQs, and NATs designed to simulate the GATE exam environment.</p>
+              
+              <div class="filter-group">
+                <label>Filter by Subject</label>
+                <div class="subject-chips" id="subject-filter-container">
+                  <button class="subject-chip active" data-subject="all">All Subjects</button>
+                  <button class="subject-chip" data-subject="Operating Systems">Operating Systems</button>
+                  <button class="subject-chip" data-subject="Algorithms">Algorithms</button>
+                  <button class="subject-chip" data-subject="Database Management Systems">DBMS</button>
+                  <button class="subject-chip" data-subject="Computer Networks">Computer Networks</button>
+                  <button class="subject-chip" data-subject="Theory of Computation">TOC</button>
+                  <button class="subject-chip" data-subject="Data Structures">Data Structures</button>
+                  <button class="subject-chip" data-subject="Engineering Mathematics">Mathematics</button>
+                  <button class="subject-chip" data-subject="Digital Logic">Digital Logic</button>
+                  <button class="subject-chip" data-subject="Compiler Design">Compiler Design</button>
+                </div>
+              </div>
+
+              <div class="session-stats">
+                <div class="sess-stat">
+                  <span class="lbl">Total Questions</span>
+                  <span class="val" id="practice-total-count">10</span>
+                </div>
+                <div class="sess-stat">
+                  <span class="lbl">Attempted</span>
+                  <span class="val" id="practice-attempted-count">0</span>
+                </div>
+                <div class="sess-stat font-success">
+                  <span class="lbl">Correct</span>
+                  <span class="val" id="practice-correct-count">0</span>
+                </div>
+              </div>
+
+              <button class="btn btn-secondary w-full" id="reset-practice-btn">
+                <i data-lucide="refresh-cw"></i> Reset Progress
+              </button>
+            </div>
+
+            <!-- Question Simulator Area -->
+            <div class="practice-viewport">
+              <!-- Active Question Box -->
+              <div class="glass-card question-card" id="active-question-card">
+                <div class="question-header">
+                  <div class="question-meta">
+                    <span class="badge badge-indigo" id="q-subject">Subject</span>
+                    <span class="badge badge-outline" id="q-topic">Topic</span>
+                    <span class="badge badge-outline" id="q-type">MCQ</span>
+                  </div>
+                  <div class="question-timer">
+                    <i data-lucide="clock"></i>
+                    <span id="q-timer">00:00</span>
+                  </div>
+                </div>
+
+                <div class="question-body" id="q-text">
+                  <!-- Question Text (dynamic) -->
+                  Question loading...
+                </div>
+
+                <div class="options-container" id="q-options-container">
+                  <!-- Dynamic Options (Radios/Checkboxes/Text Input) -->
+                </div>
+
+                <div class="question-actions">
+                  <button class="btn btn-secondary" id="solve-with-ai-btn">
+                    <i data-lucide="sparkles" class="text-indigo"></i> Solve with GATE Guru
+                  </button>
+                  
+                  <div class="navigation-actions">
+                    <button class="btn btn-secondary" id="prev-question-btn">
+                      <i data-lucide="arrow-left"></i> Previous
+                    </button>
+                    <button class="btn btn-primary" id="submit-answer-btn">
+                      Submit Answer
+                    </button>
+                    <button class="btn btn-secondary" id="next-question-btn">
+                      Next <i data-lucide="arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Feedback Area -->
+                <div class="question-feedback-box hidden" id="q-feedback-box">
+                  <div class="feedback-banner" id="q-feedback-banner">
+                    <i data-lucide="info" id="feedback-icon"></i>
+                    <span id="feedback-message">Incorrect answer. Read details below.</span>
+                  </div>
+                  <div class="explanation-content">
+                    <h4>Step-by-step Mathematical Explanation:</h4>
+                    <div id="q-explanation-text">Explanation here...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. FORMULA HUB SCREEN -->
+        <section id="formulas" class="screen-section">
+          <div class="formula-hub-header">
+            <div>
+              <h2>Formula Hub</h2>
+              <p>Quick reference handbook for engineering theorems and mathematical formulas.</p>
+            </div>
+            <div class="search-box-wrapper">
+              <i data-lucide="search"></i>
+              <input type="text" id="formula-search" placeholder="Filter by keyword or formula...">
+            </div>
+          </div>
+
+          <!-- Formula Grid -->
+          <div class="formula-grid" id="formulas-container">
+            <!-- Dynamic formula cards will render here -->
+          </div>
+        </section>
+
+        <!-- 5. STUDY PLANNER SCREEN -->
+        <section id="planner" class="screen-section">
+          <div class="planner-layout">
+            <!-- Configuration Panel -->
+            <div class="planner-config glass-card">
+              <h3>Personalized Study Planner</h3>
+              <p class="section-desc">Design a customized preparation calendar matching your availability and syllabus depth.</p>
+              
+              <form id="study-planner-form" onsubmit="event.preventDefault(); generateStudyPlan();">
+                <div class="form-group">
+                  <label for="plan-branch">Target Exam Branch</label>
+                  <div class="custom-select-wrapper">
+                    <select id="plan-branch">
+                      <option value="CS" selected>Computer Science & IT (CS)</option>
+                      <option value="EC">Electronics & Comm (EC)</option>
+                      <option value="EE">Electrical Engineering (EE)</option>
+                      <option value="ME">Mechanical Engineering (ME)</option>
+                      <option value="CE">Civil Engineering (CE)</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="select-arrow"></i>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="plan-date">Target Exam Date</label>
+                  <input type="date" id="plan-date" value="2027-02-06">
+                </div>
+
+                <div class="form-group">
+                  <label for="plan-hours">Daily Study Commitment (Hours)</label>
+                  <div class="range-slider-container">
+                    <input type="range" id="plan-hours" min="1" max="12" value="4">
+                    <span class="range-value" id="plan-hours-val">4 Hours</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="plan-level">Current Prep Level</label>
+                  <div class="radio-group-cards">
+                    <label class="radio-card">
+                      <input type="radio" name="plan-level" value="beginner" checked>
+                      <div class="radio-card-content">
+                        <span class="title">Beginner</span>
+                        <span class="desc">Starting from basics</span>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="plan-level" value="intermediate">
+                      <div class="radio-card-content">
+                        <span class="title">Intermediate</span>
+                        <span class="desc">Familiar with major concepts</span>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="plan-level" value="advanced">
+                      <div class="radio-card-content">
+                        <span class="title">Advanced</span>
+                        <span class="desc">Ready for mock tests & revision</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full">
+                  <i data-lucide="sparkles"></i> Generate Study Timeline
+                </button>
+              </form>
+            </div>
+
+            <!-- Planner Output -->
+            <div class="planner-output-viewport">
+              <div class="glass-card empty-planner-state" id="planner-empty-state">
+                <i data-lucide="calendar" class="empty-icon"></i>
+                <h3>No Active Plan</h3>
+                <p>Fill out the configuration inputs on the left and click "Generate Study Timeline" to create a custom study roadmap.</p>
+              </div>
+
+              <!-- Plan Results -->
+              <div class="plan-results-wrapper hidden" id="planner-results">
+                <div class="glass-card plan-summary-card">
+                  <div class="summary-header">
+                    <h3>Your Preparation Blueprint</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="window.print()">
+                      <i data-lucide="printer"></i> Print Plan
+                    </button>
+                  </div>
+                  
+                  <div class="summary-details-grid">
+                    <div class="detail-item">
+                      <span class="lbl">Total Preparation Days</span>
+                      <span class="val" id="summary-total-days">--</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="lbl">Estimated Study Hours</span>
+                      <span class="val" id="summary-total-hours">--</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="lbl">Recommended Mock Tests</span>
+                      <span class="val" id="summary-mocks">--</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="lbl">Daily Target</span>
+                      <span class="val text-indigo" id="summary-daily-target">--</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Subject Weights -->
+                <div class="glass-card plan-weights-card">
+                  <h4>Subject Weightage & Priority Recommendations</h4>
+                  <p class="section-desc">Based on high-yield trends for your selected engineering branch.</p>
+                  
+                  <div class="weights-progress-bars" id="planner-weights-container">
+                    <!-- Dynamic subject weight bars -->
+                  </div>
+                </div>
+
+                <!-- Weekly Milestones -->
+                <div class="glass-card plan-timeline-card">
+                  <h4>Weekly Study Roadmap</h4>
+                  <div class="timeline-roadmap" id="planner-roadmap-container">
+                    <!-- Dynamic timeline elements -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- API SETTINGS MODAL -->
+  <div class="modal-backdrop hidden" id="api-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrapper">
+          <i data-lucide="key" class="text-indigo"></i>
+          <h3>Gemini AI Configuration</h3>
+        </div>
+        <button class="btn-icon" onclick="closeApiModal()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <p class="modal-desc">GATEway AI uses Google's state-of-the-art **Gemini 1.5/2.0 API** to provide deep reasoning, concept tutoring, and custom question solving.</p>
+        
+        <div class="form-group">
+          <label for="api-key-input">Gemini API Key</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="api-key-input" placeholder="AIzaSy...">
+            <button class="toggle-password-btn" onclick="toggleApiKeyVisibility()">
+              <i data-lucide="eye" id="api-key-eye"></i>
+            </button>
+          </div>
+          <p class="input-help">Your key is saved locally in your browser cache and is never sent to any external server other than Google's secure APIs.</p>
+        </div>
+
+        <div class="instructions-box">
+          <h4><i data-lucide="help-circle"></i> How to get a free API Key:</h4>
+          <ol>
+            <li>Go to the <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">Google AI Studio <i data-lucide="external-link" class="inline-icon"></i></a>.</li>
+            <li>Sign in with your Google account.</li>
+            <li>Click <strong>"Get API Key"</strong> in the top-left menu.</li>
+            <li>Click <strong>"Create API Key"</strong> and copy it.</li>
+            <li>Paste the key into the input field above.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeApiModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveApiKey()">Save API Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load main script files -->
+  <script src="questions.js"></script>
+  <script src="formulas.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

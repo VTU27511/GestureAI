@@ -1,0 +1,35 @@
+# Virtual Environment
+backend/.venv/
+.venv/
+venv/
+ENV/
+
+# Dependencies
+frontend/node_modules/
+node_modules/
+
+# Python bytecode & cache
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Environment secrets
+backend/.env
+.env
+
+# Build outputs
+frontend/dist/
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
