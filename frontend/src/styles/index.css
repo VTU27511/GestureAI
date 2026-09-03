@@ -673,6 +673,61 @@ a:hover {
   background: radial-gradient(circle at center, transparent 0%, rgba(6, 9, 17, 0.6) 80%);
 }
 
+/* Vision AI Motion Capture HUD */
+.motion-capture-hud {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 5;
+  font-family: monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+}
+
+.hud-rec-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  animation: pulseDot 1s infinite alternate;
+}
+
+.hud-telemetry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
 /* Auth Cards & Glassmorphism */
 .auth-card {
   width: 100%;
