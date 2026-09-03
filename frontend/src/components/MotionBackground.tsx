@@ -2,9 +2,24 @@ import React, { useEffect, useRef } from 'react';
 
 interface MotionBackgroundProps {
   variant?: 'user' | 'admin';
+  customColor?: string;
+  customSecondary?: string;
 }
 
-export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'user' }) => {
+function hexToRgb(hex: string): string {
+  const clean = hex.replace('#', '');
+  const bigint = parseInt(clean, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `${r}, ${g}, ${b}`;
+}
+
+export const MotionBackground: React.FC<MotionBackgroundProps> = ({
+  variant = 'user',
+  customColor,
+  customSecondary,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -25,10 +40,10 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
     window.addEventListener('resize', handleResize);
 
     const isCyan = variant === 'user';
-    const primaryColor = isCyan ? '#38bdf8' : '#c084fc';
-    const secondaryColor = isCyan ? '#818cf8' : '#e879f9';
-    const primaryRGB = isCyan ? '56, 189, 248' : '192, 132, 252';
-    const accentRGB = isCyan ? '14, 165, 233' : '168, 85, 247';
+    const primaryColor = customColor || (isCyan ? '#38bdf8' : '#c084fc');
+    const secondaryColor = customSecondary || (isCyan ? '#818cf8' : '#e879f9');
+    const primaryRGB = hexToRgb(primaryColor);
+    const accentRGB = hexToRgb(secondaryColor);
 
     // Gestures configuration: [thumb, index, middle, ring, pinky] (0 = curled, 1 = extended)
     const gestureLibrary = [
@@ -47,9 +62,7 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
 
     let hand1TargetIdx = 0;
     let hand2TargetIdx = 1;
-
     let gestureTimer = 0;
-
     let time = 0;
 
     // Ambient floating particles
@@ -79,8 +92,6 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
       ctx.scale(scale, scale);
 
       const mirror = isLeft ? -1 : 1;
-
-      // 21 Landmarks Coordinate Array
       const pts: [number, number][] = [];
 
       // Wrist
@@ -136,7 +147,7 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
       ctx.closePath();
 
       const palmGrad = ctx.createRadialGradient(0, 30, 10, 0, 30, 140);
-      palmGrad.addColorStop(0, `rgba(${accentRGB}, 0.15)`);
+      palmGrad.addColorStop(0, `rgba(${accentRGB}, 0.16)`);
       palmGrad.addColorStop(0.7, `rgba(${primaryRGB}, 0.06)`);
       palmGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = palmGrad;
@@ -183,7 +194,6 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
         ctx.fill();
 
         if (isFingertip) {
-          // Fingertip radar beacon ring
           ctx.beginPath();
           ctx.arc(px, py, radius + 3.5 + Math.sin(time * 3 + i) * 1.5, 0, Math.PI * 2);
           ctx.strokeStyle = `rgba(255, 255, 255, 0.6)`;
@@ -200,29 +210,25 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
       const minY = Math.min(...pts.map((p) => p[1])) - 25;
       const maxY = Math.max(...pts.map((p) => p[1])) + 20;
 
-      // Corner brackets
       const bLen = 16;
       ctx.strokeStyle = `rgba(${primaryRGB}, 0.55)`;
       ctx.lineWidth = 1.6;
 
-      // Top-Left
+      // Corners
       ctx.beginPath();
       ctx.moveTo(minX, minY + bLen); ctx.lineTo(minX, minY); ctx.lineTo(minX + bLen, minY);
       ctx.stroke();
-      // Top-Right
       ctx.beginPath();
       ctx.moveTo(maxX - bLen, minY); ctx.lineTo(maxX, minY); ctx.lineTo(maxX, minY + bLen);
       ctx.stroke();
-      // Bottom-Left
       ctx.beginPath();
       ctx.moveTo(minX, maxY - bLen); ctx.lineTo(minX, maxY); ctx.lineTo(minX + bLen, maxY);
       ctx.stroke();
-      // Bottom-Right
       ctx.beginPath();
       ctx.moveTo(maxX - bLen, maxY); ctx.lineTo(maxX, maxY); ctx.lineTo(maxX, maxY - bLen);
       ctx.stroke();
 
-      // Hand Detection HUD Label
+      // Label
       ctx.fillStyle = `rgba(15, 23, 42, 0.85)`;
       ctx.fillRect(minX, minY - 24, 180, 20);
       ctx.strokeStyle = `rgba(${primaryRGB}, 0.3)`;
@@ -257,7 +263,7 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
       ctx.clearRect(0, 0, width, height);
 
       // Deep dark cyber background
-      ctx.fillStyle = isCyan ? '#070d19' : '#0b0714';
+      ctx.fillStyle = '#060b14';
       ctx.fillRect(0, 0, width, height);
 
       // Ambient radial lighting
@@ -272,7 +278,7 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
       ctx.fillRect(0, 0, width, height);
 
       // 3D Perspective Grid at Bottom
-      ctx.strokeStyle = `rgba(${primaryRGB}, 0.05)`;
+      ctx.strokeStyle = `rgba(${primaryRGB}, 0.06)`;
       ctx.lineWidth = 1;
       const horizonY = height * 0.78;
 
@@ -352,7 +358,7 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [variant]);
+  }, [variant, customColor, customSecondary]);
 
   return (
     <div className="motion-bg-container">
@@ -374,9 +380,19 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({ variant = 'u
         </div>
       </div>
 
-      {/* Ambient Glowing Corner Orbs */}
-      <div className={`motion-orb orb-1 ${variant === 'admin' ? 'orb-admin' : ''}`} />
-      <div className={`motion-orb orb-2 ${variant === 'admin' ? 'orb-admin' : ''}`} />
+      {/* Ambient Glowing Corner Orbs with Dynamic Colors */}
+      <div
+        className="motion-orb orb-1"
+        style={{
+          background: `radial-gradient(circle, ${customColor || (variant === 'admin' ? '#9333ea' : '#0ea5e9')}, transparent 70%)`,
+        }}
+      />
+      <div
+        className="motion-orb orb-2"
+        style={{
+          background: `radial-gradient(circle, ${customSecondary || (variant === 'admin' ? '#ec4899' : '#6366f1')}, transparent 70%)`,
+        }}
+      />
 
       {/* Subtle Central Vignette so centered card pops cleanly */}
       <div className="motion-bg-overlay" />

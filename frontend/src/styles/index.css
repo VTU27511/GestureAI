@@ -1386,16 +1386,31 @@ a:hover {
   max-width: 400px;
 }
 
-/* Sliding Pill Switcher */
+/* Smooth Sliding Pill Switcher Bar */
 .portal-pill-switcher {
   display: flex;
   position: relative;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
   padding: 4px;
-  margin-bottom: 1.5rem;
-  gap: 4px;
+  margin-bottom: 1.75rem;
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.pill-slider-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  border-radius: 9999px;
+  z-index: 1;
+  transition: transform 0.42s cubic-bezier(0.34, 1.25, 0.64, 1),
+              background 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 .pill-option {
@@ -1404,33 +1419,27 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.82rem;
-  font-weight: 600;
+  padding: 0.62rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 700;
   border-radius: 9999px;
-  color: var(--text-muted);
+  color: #94a3b8;
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: all 0.35s ease;
+  position: relative;
+  z-index: 2;
+  transition: color 0.3s ease;
+  user-select: none;
 }
 
-.pill-option:hover {
-  color: var(--text-primary);
+.pill-option.active {
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.pill-option.active.pill-user {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.28), rgba(2, 132, 199, 0.42));
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.45);
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
-}
-
-.pill-option.active.pill-admin {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.32), rgba(126, 34, 206, 0.48));
-  color: #c084fc;
-  border: 1px solid rgba(192, 132, 252, 0.45);
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+.pill-option:not(.active):hover {
+  color: #f8fafc;
 }
 
 /* Cyber Motion Video Panel Styling */

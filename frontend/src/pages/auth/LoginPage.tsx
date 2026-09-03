@@ -9,6 +9,82 @@ interface LoginPageProps {
   initialMode?: 'user' | 'admin';
 }
 
+export interface ColorTheme {
+  name: string;
+  primary: string;
+  secondary: string;
+  glow: string;
+  gradient: string;
+  textAccent: string;
+}
+
+export const DYNAMIC_THEMES: ColorTheme[] = [
+  {
+    name: 'Electric Cyan',
+    primary: '#06b6d4',
+    secondary: '#38bdf8',
+    glow: 'rgba(6, 182, 212, 0.45)',
+    gradient: 'linear-gradient(135deg, #06b6d4, #0284c7)',
+    textAccent: '#38bdf8',
+  },
+  {
+    name: 'Neon Purple',
+    primary: '#a855f7',
+    secondary: '#c084fc',
+    glow: 'rgba(168, 85, 247, 0.45)',
+    gradient: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+    textAccent: '#c084fc',
+  },
+  {
+    name: 'Cyber Emerald',
+    primary: '#10b981',
+    secondary: '#34d399',
+    glow: 'rgba(16, 185, 129, 0.45)',
+    gradient: 'linear-gradient(135deg, #10b981, #059669)',
+    textAccent: '#34d399',
+  },
+  {
+    name: 'Cyberpunk Pink',
+    primary: '#f43f5e',
+    secondary: '#fb7185',
+    glow: 'rgba(244, 63, 94, 0.45)',
+    gradient: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+    textAccent: '#fb7185',
+  },
+  {
+    name: 'Solar Amber',
+    primary: '#f59e0b',
+    secondary: '#fbbf24',
+    glow: 'rgba(245, 158, 11, 0.45)',
+    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    textAccent: '#fbbf24',
+  },
+  {
+    name: 'Electric Violet',
+    primary: '#8b5cf6',
+    secondary: '#a78bfa',
+    glow: 'rgba(139, 92, 246, 0.45)',
+    gradient: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+    textAccent: '#a78bfa',
+  },
+  {
+    name: 'Hyper Teal',
+    primary: '#14b8a6',
+    secondary: '#2dd4bf',
+    glow: 'rgba(20, 184, 166, 0.45)',
+    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+    textAccent: '#2dd4bf',
+  },
+  {
+    name: 'Neon Magenta',
+    primary: '#ec4899',
+    secondary: '#f472b6',
+    glow: 'rgba(236, 72, 153, 0.45)',
+    gradient: 'linear-gradient(135deg, #ec4899, #db2777)',
+    textAccent: '#f472b6',
+  },
+];
+
 export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,6 +95,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
     if (initialMode) return initialMode;
     return location.pathname.includes('admin') ? 'admin' : 'user';
   });
+
+  // Dynamic Theme Index that changes on every single swap!
+  const [themeIndex, setThemeIndex] = useState(() => (initialMode === 'admin' ? 1 : 0));
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -38,12 +117,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
   }, [location.pathname]);
 
   const isAdmin = portalMode === 'admin';
+  const currentTheme = DYNAMIC_THEMES[themeIndex];
 
   const handleSwap = (targetMode: 'user' | 'admin') => {
     if (portalMode === targetMode) return;
     setError(null);
     setCaptchaInput('');
     setPortalMode(targetMode);
+    // Cycle to a brand-new vibrant cyber color every single time!
+    setThemeIndex((prev) => (prev + 1) % DYNAMIC_THEMES.length);
     window.history.replaceState(null, '', targetMode === 'admin' ? '/admin/login' : '/login');
   };
 
@@ -100,17 +182,37 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
 
   return (
     <div className="auth-wrapper">
-      {/* Dynamic Background Particle & Wave Field */}
-      <MotionBackground variant={portalMode} />
+      {/* Real-time Human Hand Gesture Motion Capture with Dynamic Color Sync */}
+      <MotionBackground
+        variant={portalMode}
+        customColor={currentTheme.primary}
+        customSecondary={currentTheme.secondary}
+      />
 
       {/* Centered Glassmorphic Authentication Card */}
-      <div className={`auth-card ${isAdmin ? 'admin-auth-card' : ''}`}>
-        
-        {/* Top Smooth Pill Switcher */}
+      <div
+        className="auth-card"
+        style={{
+          borderColor: currentTheme.primary,
+          boxShadow: `0 20px 50px -15px rgba(0, 0, 0, 0.85), 0 0 35px -5px ${currentTheme.glow}`,
+          transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        {/* Top Smooth Sliding Pill Switcher Bar */}
         <div className="portal-pill-switcher">
+          {/* Physical Sliding Glider Thumb */}
+          <div
+            className="pill-slider-thumb"
+            style={{
+              transform: isAdmin ? 'translateX(100%)' : 'translateX(0%)',
+              background: currentTheme.gradient,
+              boxShadow: `0 0 20px ${currentTheme.glow}, 0 2px 10px rgba(0,0,0,0.5)`,
+            }}
+          />
+
           <button
             type="button"
-            className={`pill-option ${!isAdmin ? 'active pill-user' : ''}`}
+            className={`pill-option ${!isAdmin ? 'active' : ''}`}
             onClick={() => handleSwap('user')}
           >
             <UserIcon size={15} />
@@ -119,7 +221,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
 
           <button
             type="button"
-            className={`pill-option ${isAdmin ? 'active pill-admin' : ''}`}
+            className={`pill-option ${isAdmin ? 'active' : ''}`}
             onClick={() => handleSwap('admin')}
           >
             <ShieldCheck size={15} />
@@ -130,14 +232,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
         {/* Dynamic Header */}
         <div className="auth-header">
           <div
-            className={`brand-icon ${isAdmin ? 'admin-brand-icon' : ''}`}
-            style={{ margin: '0 auto', transition: 'all 0.35s ease' }}
+            className="brand-icon"
+            style={{
+              margin: '0 auto',
+              background: `radial-gradient(circle, ${currentTheme.glow} 0%, rgba(15, 23, 42, 0.7) 100%)`,
+              borderColor: currentTheme.primary,
+              color: currentTheme.textAccent,
+              boxShadow: `0 0 20px ${currentTheme.glow}`,
+              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
           >
             {isAdmin ? <ShieldCheck size={26} /> : <HandMetal size={24} />}
           </div>
 
           {isAdmin && (
-            <div className="admin-clearance-badge">
+            <div
+              className="admin-clearance-badge"
+              style={{
+                borderColor: currentTheme.primary,
+                color: currentTheme.textAccent,
+                background: `rgba(15, 23, 42, 0.7)`,
+              }}
+            >
               <Lock size={12} />
               <span>SECURITY LEVEL 1 — RESTRICTED</span>
             </div>
@@ -219,8 +335,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
 
           <button
             type="submit"
-            className={`btn ${isAdmin ? 'btn-admin' : 'btn-primary'}`}
-            style={{ width: '100%', marginTop: '0.85rem', padding: '0.75rem' }}
+            className="btn"
+            style={{
+              width: '100%',
+              marginTop: '0.85rem',
+              padding: '0.75rem',
+              background: currentTheme.gradient,
+              borderColor: currentTheme.primary,
+              boxShadow: `0 4px 20px ${currentTheme.glow}`,
+              color: '#ffffff',
+              fontWeight: 700,
+              transition: 'all 0.4s ease',
+            }}
             disabled={loading}
           >
             {loading
@@ -236,7 +362,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
               <button
                 type="button"
                 onClick={() => handleSwap('user')}
-                style={{ background: 'none', border: 'none', color: 'var(--accent-cyan)', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: currentTheme.textAccent,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
               >
                 Switch to User Portal →
               </button>
@@ -244,7 +377,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
           ) : (
             <>
               Don't have an account?{' '}
-              <Link to="/register" style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>
+              <Link
+                to="/register"
+                style={{ fontWeight: 600, color: currentTheme.textAccent }}
+              >
                 Create one now
               </Link>
             </>
