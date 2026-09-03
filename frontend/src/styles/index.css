@@ -4,13 +4,13 @@
    ========================================================= */
 
 :root {
-  --bg-main: #090d16;
-  --bg-card: #111827;
-  --bg-card-hover: #162032;
-  --bg-sidebar: #0d131f;
-  --bg-header: rgba(13, 19, 31, 0.85);
-  --border-subtle: #1f293d;
-  --border-highlight: #2e3d5b;
+  --bg-main: #060b14;
+  --bg-card: rgba(13, 20, 34, 0.78);
+  --bg-card-hover: rgba(22, 32, 50, 0.85);
+  --bg-sidebar: rgba(10, 16, 28, 0.85);
+  --bg-header: rgba(10, 16, 28, 0.82);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-highlight: rgba(255, 255, 255, 0.16);
 
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
@@ -90,6 +90,8 @@ a:hover {
 .sidebar {
   width: 260px;
   background-color: var(--bg-sidebar);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -199,7 +201,8 @@ a:hover {
 .header {
   height: 64px;
   background-color: var(--bg-header);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -242,6 +245,8 @@ a:hover {
 
 .card {
   background-color: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -272,6 +277,8 @@ a:hover {
   align-items: center;
   gap: 1.25rem;
   background-color: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.5rem;

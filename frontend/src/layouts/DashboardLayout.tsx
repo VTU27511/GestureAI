@@ -1,6 +1,8 @@
-import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { MotionBackground } from '../components/MotionBackground';
+import { DYNAMIC_THEMES, applyThemeVariables } from '../utils/theme';
 import {
   LayoutDashboard,
   Layers,
@@ -13,25 +15,65 @@ import {
   LogOut,
   HandMetal,
   Cpu,
-  FileText
+  FileText,
+  Palette
 } from 'lucide-react';
 
 export const DashboardLayout: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
-  const navigate = useNavigate();
+
+  // Load persisted theme or default to 0
+  const [themeIndex, setThemeIndex] = useState<number>(() => {
+    const saved = localStorage.getItem('gestureai_theme_index');
+    return saved !== null ? parseInt(saved, 10) % DYNAMIC_THEMES.length : (isAdmin ? 1 : 0);
+  });
+
+  const currentTheme = DYNAMIC_THEMES[themeIndex];
+
+  useEffect(() => {
+    applyThemeVariables(currentTheme);
+    localStorage.setItem('gestureai_theme_index', themeIndex.toString());
+  }, [themeIndex, currentTheme]);
+
+  const cycleTheme = () => {
+    setThemeIndex((prev) => (prev + 1) % DYNAMIC_THEMES.length);
+  };
 
   return (
-    <div className="app-container">
-      {/* Sidebar */}
-      <aside className="sidebar">
+    <div className="app-container" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Real-time Human Hand Gesture Motion Capture Video Canvas Background */}
+      <MotionBackground
+        variant={isAdmin ? 'admin' : 'user'}
+        customColor={currentTheme.primary}
+        customSecondary={currentTheme.secondary}
+      />
+
+      {/* Glassmorphic Sidebar */}
+      <aside className="sidebar" style={{ zIndex: 10 }}>
         <div className="sidebar-brand">
-          <div className="brand-icon">
+          <div
+            className="brand-icon"
+            style={{
+              borderColor: currentTheme.primary,
+              boxShadow: `0 0 16px ${currentTheme.glow}`,
+              color: currentTheme.textAccent,
+            }}
+          >
             <HandMetal size={20} />
           </div>
           <div>
             <div className="brand-name">GestureAI</div>
           </div>
-          <span className="brand-badge">v2.0</span>
+          <span
+            className="brand-badge"
+            style={{
+              borderColor: currentTheme.primary,
+              color: currentTheme.textAccent,
+              background: `rgba(15, 23, 42, 0.7)`,
+            }}
+          >
+            v2.0
+          </span>
         </div>
 
         <nav className="sidebar-nav">
@@ -89,7 +131,10 @@ export const DashboardLayout: React.FC = () => {
           {/* Admin Navigation */}
           {isAdmin && (
             <>
-              <div className="nav-section-title" style={{ marginTop: '1.25rem', color: 'var(--accent-violet)' }}>
+              <div
+                className="nav-section-title"
+                style={{ marginTop: '1.25rem', color: currentTheme.textAccent }}
+              >
                 Admin Portal
               </div>
 
@@ -155,7 +200,13 @@ export const DashboardLayout: React.FC = () => {
 
         <div className="sidebar-footer">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <div className="user-avatar">
+            <div
+              className="user-avatar"
+              style={{
+                background: currentTheme.gradient,
+                boxShadow: `0 0 10px ${currentTheme.glow}`,
+              }}
+            >
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div style={{ overflow: 'hidden' }}>
@@ -188,14 +239,58 @@ export const DashboardLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="main-content">
+      <div className="main-content" style={{ zIndex: 10, position: 'relative' }}>
         <header className="header">
           <div className="header-title">
             GestureAI Platform
           </div>
 
-          <div className="header-user">
-            <span className={`badge ${user?.role === 'ADMIN' ? 'badge-violet' : 'badge-cyan'}`}>
+          <div className="header-user" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {/* Dynamic Color Theme Cycler Button */}
+            <button
+              type="button"
+              onClick={cycleTheme}
+              title="Click to cycle theme color"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: 'rgba(15, 23, 42, 0.75)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: `1px solid ${currentTheme.primary}`,
+                borderRadius: '9999px',
+                padding: '0.35rem 0.85rem',
+                color: '#fff',
+                boxShadow: `0 0 14px ${currentTheme.glow}`,
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <span
+                style={{
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: currentTheme.gradient,
+                  boxShadow: `0 0 8px ${currentTheme.primary}`,
+                  display: 'inline-block',
+                }}
+              />
+              <Palette size={14} style={{ color: currentTheme.textAccent }} />
+              <span>{currentTheme.name}</span>
+            </button>
+
+            <span
+              className="badge"
+              style={{
+                background: `rgba(15, 23, 42, 0.7)`,
+                borderColor: currentTheme.primary,
+                color: currentTheme.textAccent,
+              }}
+            >
               {user?.role}
             </span>
 
