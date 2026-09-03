@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { MotionBackground } from '../components/MotionBackground';
 import { DYNAMIC_THEMES, applyThemeVariables } from '../utils/theme';
 import {
   LayoutDashboard,
@@ -40,12 +39,35 @@ export const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="app-container" style={{ position: 'relative', overflow: 'hidden' }}>
-      {/* Real-time Human Hand Gesture Motion Video Background */}
-      <MotionBackground
-        variant={isAdmin ? 'admin' : 'user'}
-        customColor={currentTheme.primary}
-        customSecondary={currentTheme.secondary}
+    <div className="app-container" style={{ position: 'relative', overflow: 'hidden', background: '#060b14' }}>
+      {/* Pure CSS Ambient Cyber Glow (Zero Lag, 100% Smooth 60FPS) */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '-160px',
+          left: '25%',
+          width: '520px',
+          height: '520px',
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${currentTheme.glow} 0%, transparent 70%)`,
+          pointerEvents: 'none',
+          zIndex: 1,
+          transition: 'background 0.5s ease',
+        }}
+      />
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '-180px',
+          right: '10%',
+          width: '560px',
+          height: '560px',
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${currentTheme.glow} 0%, transparent 70%)`,
+          pointerEvents: 'none',
+          zIndex: 1,
+          transition: 'background 0.5s ease',
+        }}
       />
 
       {/* Glassmorphic Sidebar */}
