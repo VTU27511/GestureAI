@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { HandMetal, ShieldCheck, AlertCircle, Eye, EyeOff, User as UserIcon } from 'lucide-react';
+import { ShieldCheck, Lock, AlertCircle, Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import { MotionBackground } from '../../components/MotionBackground';
 import { Captcha } from '../../components/Captcha';
 
-export const LoginPage: React.FC = () => {
+export const AdminLoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -14,7 +14,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -29,7 +29,7 @@ export const LoginPage: React.FC = () => {
     }
 
     if (captchaInput.trim().toUpperCase() !== captchaCode.toUpperCase()) {
-      setError('Invalid CAPTCHA code. Please enter the characters shown.');
+      setError('Security CAPTCHA verification failed. Please try again.');
       setCaptchaInput('');
       return;
     }
@@ -38,19 +38,22 @@ export const LoginPage: React.FC = () => {
 
     try {
       const user = await login({ username, password });
-      const from = (location.state as any)?.from?.pathname;
-      if (from) {
-        navigate(from, { replace: true });
-      } else if (user.role === 'ADMIN') {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/user/dashboard', { replace: true });
+
+      // Enforce Admin Role
+      if (user.role !== 'ADMIN') {
+        logout();
+        setError('Access Denied: Administrator clearance required. Regular users must sign in via the User Portal.');
+        setLoading(false);
+        return;
       }
+
+      const from = (location.state as any)?.from?.pathname;
+      navigate(from && from.startsWith('/admin') ? from : '/admin', { replace: true });
     } catch (err: any) {
       if (err.message === 'Network Error' || !err.response) {
-        setError('Cannot reach server. Ensure backend is running on port 8000.');
+        setError('Cannot reach server. Ensure the backend is active on port 8000.');
       } else {
-        const msg = err.response?.data?.detail || 'Invalid username/email or password.';
+        const msg = err.response?.data?.detail || 'Invalid administrator credentials.';
         setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
       }
     } finally {
@@ -60,27 +63,31 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="auth-wrapper">
-      <MotionBackground variant="user" />
+      <MotionBackground variant="admin" />
 
-      <div className="auth-card">
+      <div className="auth-card admin-auth-card">
         {/* Portal Switcher Tabs */}
         <div className="auth-portal-tabs">
-          <div className="auth-portal-tab active user-active">
+          <Link to="/login" className="auth-portal-tab">
             <UserIcon size={15} />
             <span>User Portal</span>
-          </div>
-          <Link to="/admin/login" className="auth-portal-tab">
+          </Link>
+          <div className="auth-portal-tab active admin-active">
             <ShieldCheck size={15} />
             <span>Admin Portal</span>
-          </Link>
+          </div>
         </div>
 
         <div className="auth-header">
-          <div className="brand-icon" style={{ margin: '0 auto' }}>
-            <HandMetal size={24} />
+          <div className="brand-icon admin-brand-icon" style={{ margin: '0 auto' }}>
+            <ShieldCheck size={26} />
           </div>
-          <h2 className="auth-title">Welcome to GestureAI</h2>
-          <p className="auth-subtitle">Sign in to train gestures and recognize hand signs in real time</p>
+          <div className="admin-clearance-badge">
+            <Lock size={12} />
+            <span>SECURITY LEVEL 1 — RESTRICTED</span>
+          </div>
+          <h2 className="auth-title">Admin Control Center</h2>
+          <p className="auth-subtitle">Platform governance, user management, and AI model auditing</p>
         </div>
 
         {error && (
@@ -92,11 +99,11 @@ export const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Username or Email</label>
+            <label className="form-label">Administrator Account / Email</label>
             <input
               type="text"
               className="form-input"
-              placeholder="e.g. demo or ranjith"
+              placeholder="e.g. admin"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -105,7 +112,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">Security Key / Password</label>
             <div className="password-input-container">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -131,7 +138,7 @@ export const LoginPage: React.FC = () => {
           <div className="form-group">
             <label className="form-label">Security Verification (CAPTCHA)</label>
             <div className="captcha-field-row">
-              <Captcha onCaptchaChange={setCaptchaCode} variant="user" />
+              <Captcha onCaptchaChange={setCaptchaCode} variant="admin" />
               <input
                 type="text"
                 className="form-input captcha-input"
@@ -146,24 +153,24 @@ export const LoginPage: React.FC = () => {
 
           <button
             type="submit"
-            className="btn btn-primary"
+            className="btn btn-admin"
             style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem' }}
             disabled={loading}
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? 'Verifying Clearance...' : 'Authenticate as Administrator'}
           </button>
         </form>
 
         <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ fontWeight: 600 }}>
-            Create one now
+          Standard user?{' '}
+          <Link to="/login" style={{ color: 'var(--accent-cyan)', fontWeight: 600 }}>
+            Sign in via User Portal →
           </Link>
         </div>
 
-        <div className="demo-credentials-box">
-          <div><strong>Quick Demo Account:</strong></div>
-          <div style={{ marginTop: '4px' }}>Username: <code>demo</code> | Password: <code>demo123</code></div>
+        <div className="demo-credentials-box admin-demo-box">
+          <div><strong>Authorized Admin Credentials:</strong></div>
+          <div style={{ marginTop: '4px' }}>Username: <code>admin</code> | Password: <code>admin123</code></div>
         </div>
       </div>
     </div>

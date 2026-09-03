@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { DashboardLayout } from './layouts/DashboardLayout';
 
 import { LoginPage } from './pages/auth/LoginPage';
+import { AdminLoginPage } from './pages/auth/AdminLoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { UserDashboardPage } from './pages/user/UserDashboardPage';
 import { MyGesturesPage } from './pages/user/MyGesturesPage';
@@ -48,6 +49,7 @@ export const App: React.FC = () => {
         <Routes>
           {/* Public Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/" element={<RootRedirect />} />
 
