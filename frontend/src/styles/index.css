@@ -1261,3 +1261,355 @@ a:hover {
     max-width: 440px;
   }
 }
+
+/* =========================================================
+   Sliding Swap Auth Portal & Cyber Motion Video
+   ========================================================= */
+
+.auth-swap-container {
+  display: flex;
+  width: 100%;
+  max-width: 980px;
+  min-height: 640px;
+  background: rgba(13, 20, 34, 0.86);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9),
+              0 0 35px -5px rgba(14, 165, 233, 0.18);
+  position: relative;
+  z-index: 10;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 1.5rem auto;
+}
+
+.auth-swap-container.swapped-admin {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9),
+              0 0 45px -5px rgba(168, 85, 247, 0.25);
+}
+
+.swap-panel {
+  flex: 1;
+  width: 50%;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              order 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sliding Panel Order & Transformations */
+.swapped-user .swap-video-panel {
+  order: 1;
+}
+
+.swapped-user .swap-form-panel {
+  order: 2;
+}
+
+.swapped-admin .swap-video-panel {
+  order: 2;
+}
+
+.swapped-admin .swap-form-panel {
+  order: 1;
+}
+
+/* Inner Form Card Styling inside Swap Panel */
+.swap-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.25rem;
+  background: rgba(10, 16, 28, 0.7);
+}
+
+.auth-card-inner {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Sliding Pill Switcher */
+.portal-pill-switcher {
+  display: flex;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 4px;
+  margin-bottom: 1.5rem;
+  gap: 4px;
+}
+
+.pill-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  color: var(--text-muted);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pill-option:hover {
+  color: var(--text-primary);
+}
+
+.pill-option.active.pill-user {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(2, 132, 199, 0.38));
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+}
+
+.pill-option.active.pill-admin {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(126, 34, 206, 0.45));
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
+}
+
+/* Cyber Motion Video Panel Styling */
+.swap-video-panel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  background: #060b14;
+}
+
+.cyber-motion-panel {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.motion-canvas-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.cyber-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.motion-content-layer {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 2.25rem 2rem;
+  background: linear-gradient(180deg, rgba(6, 11, 20, 0.4) 0%, rgba(6, 11, 20, 0.8) 100%);
+}
+
+.motion-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.motion-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.panel-admin .motion-tag {
+  background: rgba(168, 85, 247, 0.12);
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.live-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  margin-right: 6px;
+  animation: pulseDot 1.5s infinite;
+}
+
+.motion-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.motion-center-brand {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.motion-brand-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 1.25rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(2, 132, 199, 0.4));
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+  animation: floatIcon 4s ease-in-out infinite alternate;
+}
+
+.panel-admin .motion-brand-icon {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(126, 34, 206, 0.45));
+  border-color: rgba(192, 132, 252, 0.45);
+  color: #c084fc;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+}
+
+@keyframes floatIcon {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+.motion-brand-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.motion-brand-subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  max-width: 320px;
+  margin: 0 auto 1.25rem;
+  line-height: 1.45;
+}
+
+.active-gesture-hud {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.hud-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 2px;
+}
+
+.hud-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.hud-tag {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.hud-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.motion-bottom-action {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.swap-tip-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.65rem;
+}
+
+.btn-swap-portal {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-swap-portal:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Responsive Stacking for Smaller Screens */
+@media (max-width: 920px) {
+  .auth-swap-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+  .swap-panel {
+    width: 100%;
+  }
+  .swap-video-panel {
+    min-height: 400px;
+  }
+  .swapped-admin .swap-form-panel,
+  .swapped-user .swap-form-panel {
+    order: 2;
+  }
+  .swapped-admin .swap-video-panel,
+  .swapped-user .swap-video-panel {
+    order: 1;
+  }
+}
