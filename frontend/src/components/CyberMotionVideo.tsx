@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ShieldCheck, HandMetal, Sparkles, Activity, Cpu, ArrowRightLeft, Radio } from 'lucide-react';
+import { ShieldCheck, HandMetal, Activity, Radio } from 'lucide-react';
 
 interface CyberMotionVideoProps {
   portalMode: 'user' | 'admin';
-  onSwapPortal: () => void;
+  onSwapPortal?: () => void;
 }
 
-export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, onSwapPortal }) => {
+export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [currentGesture, setCurrentGesture] = useState('PEACE SIGN');
   const [confidence, setConfidence] = useState(99.4);
@@ -27,10 +27,10 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
 
     // Gesture list for animation cycles
     const gestures = [
-      { name: 'PEACE SIGN', fingers: [0, 1, 1, 0, 0], conf: 99.4 },
-      { name: 'THUMBS UP', fingers: [1, 0, 0, 0, 0], conf: 98.8 },
-      { name: 'HELLO WAVE', fingers: [1, 1, 1, 1, 1], conf: 99.6 },
-      { name: 'STOP / HALT', fingers: [1, 1, 1, 1, 1], conf: 98.2 },
+      { name: 'PEACE SIGN', emoji: '✌️', fingers: [0, 1, 1, 0, 0], conf: 99.4 },
+      { name: 'THUMBS UP', emoji: '👍', fingers: [1, 0, 0, 0, 0], conf: 98.8 },
+      { name: 'HELLO WAVE', emoji: '👋', fingers: [1, 1, 1, 1, 1], conf: 99.6 },
+      { name: 'STOP / HALT', emoji: '✋', fingers: [1, 1, 1, 1, 1], conf: 98.2 },
     ];
 
     let gestureIndex = 0;
@@ -38,22 +38,22 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
       gestureIndex = (gestureIndex + 1) % gestures.length;
       setCurrentGesture(gestures[gestureIndex].name);
       setConfidence(gestures[gestureIndex].conf);
-    }, 3800);
+    }, 3500);
 
     const render = () => {
       t += 0.035;
 
       const w = (canvas.width = canvas.parentElement?.clientWidth || 450);
-      const h = (canvas.height = canvas.parentElement?.clientHeight || 580);
+      const h = (canvas.height = canvas.parentElement?.clientHeight || 640);
 
       // Deep cyber canvas background
       ctx.fillStyle = isAdmin ? '#0d091a' : '#050c18';
       ctx.fillRect(0, 0, w, h);
 
       // 1. Futuristic Cyber Grid Floor (3D perspective)
-      ctx.strokeStyle = isAdmin ? 'rgba(168, 85, 247, 0.08)' : 'rgba(56, 189, 248, 0.08)';
+      ctx.strokeStyle = isAdmin ? 'rgba(168, 85, 247, 0.09)' : 'rgba(56, 189, 248, 0.09)';
       ctx.lineWidth = 1;
-      const horizonY = h * 0.72;
+      const horizonY = h * 0.75;
 
       for (let x = -w; x < w * 2; x += 40) {
         ctx.beginPath();
@@ -73,34 +73,34 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
       }
 
       // 2. Ambient Floating Glowing Energy Spheres
-      const orbX1 = w / 2 + Math.cos(t * 0.8) * 70;
-      const orbY1 = h / 2 - 40 + Math.sin(t * 0.6) * 45;
-      const orbGrad = ctx.createRadialGradient(orbX1, orbY1, 10, orbX1, orbY1, 140);
-      orbGrad.addColorStop(0, isAdmin ? 'rgba(168, 85, 247, 0.35)' : 'rgba(14, 165, 233, 0.35)');
+      const orbX1 = w / 2 + Math.cos(t * 0.8) * 80;
+      const orbY1 = h / 2 - 20 + Math.sin(t * 0.6) * 50;
+      const orbGrad = ctx.createRadialGradient(orbX1, orbY1, 15, orbX1, orbY1, 160);
+      orbGrad.addColorStop(0, isAdmin ? 'rgba(168, 85, 247, 0.38)' : 'rgba(14, 165, 233, 0.38)');
       orbGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = orbGrad;
       ctx.beginPath();
-      ctx.arc(orbX1, orbY1, 140, 0, Math.PI * 2);
+      ctx.arc(orbX1, orbY1, 160, 0, Math.PI * 2);
       ctx.fill();
 
       // 3. 3D Hand Skeleton with 21 Landmarks
-      const handCenterX = w / 2 + Math.sin(t * 0.9) * 12;
-      const handCenterY = h / 2 - 10 + Math.cos(t * 0.7) * 10;
+      const handCenterX = w / 2 + Math.sin(t * 0.9) * 14;
+      const handCenterY = h / 2 + Math.cos(t * 0.7) * 12;
       const curFingers = gestures[gestureIndex].fingers;
 
       const pts: [number, number][] = [];
-      pts[0] = [handCenterX, handCenterY + 55]; // Wrist
-      pts[1] = [handCenterX - 38, handCenterY + 25]; // Thumb CMC
-      pts[5] = [handCenterX - 28, handCenterY - 15]; // Index MCP
-      pts[9] = [handCenterX - 3, handCenterY - 22];  // Middle MCP
-      pts[13] = [handCenterX + 22, handCenterY - 18]; // Ring MCP
-      pts[17] = [handCenterX + 44, handCenterY - 8];  // Pinky MCP
+      pts[0] = [handCenterX, handCenterY + 65]; // Wrist
+      pts[1] = [handCenterX - 42, handCenterY + 30]; // Thumb CMC
+      pts[5] = [handCenterX - 30, handCenterY - 18]; // Index MCP
+      pts[9] = [handCenterX - 3, handCenterY - 26];  // Middle MCP
+      pts[13] = [handCenterX + 25, handCenterY - 22]; // Ring MCP
+      pts[17] = [handCenterX + 48, handCenterY - 10]; // Pinky MCP
 
       // Thumb
       const tAngle = -0.7 - curFingers[0] * 0.4 + Math.sin(t * 2) * 0.06;
-      pts[2] = [pts[1][0] + Math.cos(tAngle) * 24, pts[1][1] + Math.sin(tAngle) * 24];
-      pts[3] = [pts[2][0] + Math.cos(tAngle) * 22, pts[2][1] + Math.sin(tAngle) * 22];
-      pts[4] = [pts[3][0] + Math.cos(tAngle) * 20, pts[3][1] + Math.sin(tAngle) * 20];
+      pts[2] = [pts[1][0] + Math.cos(tAngle) * 26, pts[1][1] + Math.sin(tAngle) * 26];
+      pts[3] = [pts[2][0] + Math.cos(tAngle) * 24, pts[2][1] + Math.sin(tAngle) * 24];
+      pts[4] = [pts[3][0] + Math.cos(tAngle) * 22, pts[3][1] + Math.sin(tAngle) * 22];
 
       // Fingers helper
       const makeFinger = (mcpIdx: number, ext: number, spread: number, len: number) => {
@@ -113,16 +113,16 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
         return [p1, p2, p3];
       };
 
-      const [p6, p7, p8] = makeFinger(5, curFingers[1], -0.15, 30);
+      const [p6, p7, p8] = makeFinger(5, curFingers[1], -0.15, 34);
       pts[6] = p6; pts[7] = p7; pts[8] = p8;
 
-      const [p10, p11, p12] = makeFinger(9, curFingers[2], 0.0, 33);
+      const [p10, p11, p12] = makeFinger(9, curFingers[2], 0.0, 38);
       pts[10] = p10; pts[11] = p11; pts[12] = p12;
 
-      const [p14, p15, p16] = makeFinger(13, curFingers[3], 0.14, 30);
+      const [p14, p15, p16] = makeFinger(13, curFingers[3], 0.14, 34);
       pts[14] = p14; pts[15] = p15; pts[16] = p16;
 
-      const [p18, p19, p20] = makeFinger(17, curFingers[4], 0.28, 25);
+      const [p18, p19, p20] = makeFinger(17, curFingers[4], 0.28, 28);
       pts[18] = p18; pts[19] = p19; pts[20] = p20;
 
       const bones: [number, number][] = [
@@ -135,25 +135,27 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
       ];
 
       // Draw bones
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 14;
       ctx.shadowColor = primaryColor;
       ctx.strokeStyle = primaryColor;
-      ctx.lineWidth = 2.6;
+      ctx.lineWidth = 2.8;
 
       for (const [s, e] of bones) {
         if (pts[s] && pts[e]) {
           ctx.beginPath();
           ctx.moveTo(pts[s][0], pts[s][1]);
-          ctx.lineTo(pts[e][0], pts[e][1]);
+          ctx.lineTo(pts[endBone(e)][0], pts[endBone(e)][1]);
           ctx.stroke();
         }
       }
+
+      function endBone(idx: number) { return idx; }
 
       // Draw joints
       for (let i = 0; i < pts.length; i++) {
         const [px, py] = pts[i];
         const isTip = [4, 8, 12, 16, 20].includes(i);
-        const r = isTip ? 5.5 : 3.5;
+        const r = isTip ? 6 : 4;
 
         ctx.beginPath();
         ctx.arc(px, py, r, 0, Math.PI * 2);
@@ -173,12 +175,12 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
 
       // 4. Cyber Scanning Wave Overlay
       const scanLineY = ((t * 45) % (h + 60)) - 30;
-      const scanGrad = ctx.createLinearGradient(0, scanLineY - 18, 0, scanLineY + 18);
+      const scanGrad = ctx.createLinearGradient(0, scanLineY - 20, 0, scanLineY + 20);
       scanGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
       scanGrad.addColorStop(0.5, isAdmin ? 'rgba(192, 132, 252, 0.28)' : 'rgba(56, 189, 248, 0.28)');
       scanGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = scanGrad;
-      ctx.fillRect(0, scanLineY - 18, w, 36);
+      ctx.fillRect(0, scanLineY - 20, w, 40);
 
       animId = requestAnimationFrame(render);
     };
@@ -198,14 +200,14 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
         <canvas ref={canvasRef} className="cyber-canvas" />
       </div>
 
-      {/* Futuristic Glassmorphic Overlays */}
+      {/* Clean HUD Overlays */}
       <div className="motion-content-layer">
         {/* Top Telemetry Header */}
         <div className="motion-top-bar">
           <div className="motion-tag">
             <span className="live-status-dot"></span>
             <Radio size={13} style={{ marginRight: '4px' }} />
-            <span>{isAdmin ? 'CLEARANCE SECURITY LEVEL 1' : 'VISION AI CORE 60 FPS'}</span>
+            <span>{isAdmin ? 'SECURITY CLEARANCE LEVEL 1' : 'VISION AI CORE 60 FPS'}</span>
           </div>
 
           <div className="motion-badge">
@@ -214,21 +216,8 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
           </div>
         </div>
 
-        {/* Center Futuristic Showcase Info */}
-        <div className="motion-center-brand">
-          <div className="motion-brand-icon">
-            {isAdmin ? <ShieldCheck size={32} /> : <HandMetal size={32} />}
-          </div>
-          <h3 className="motion-brand-title">
-            {isAdmin ? 'ADMINISTRATIVE ACCESS' : 'GESTUREAI PLATFORM'}
-          </h3>
-          <p className="motion-brand-subtitle">
-            {isAdmin
-              ? 'Multi-user governance, gesture approvals, and real-time model auditing'
-              : 'Interactive hand gesture recognition & speech synthesis powered by MediaPipe AI'}
-          </p>
-
-          {/* Real-time Recognition Box */}
+        {/* Clean Center Floating Sign Recognition HUD */}
+        <div className="motion-hud-center">
           <div className="active-gesture-hud">
             <div className="hud-indicator">
               <span className="hud-pulse"></span>
@@ -238,20 +227,10 @@ export const CyberMotionVideo: React.FC<CyberMotionVideoProps> = ({ portalMode, 
           </div>
         </div>
 
-        {/* Bottom Swap Portal Card */}
-        <div className="motion-bottom-action">
-          <div className="swap-tip-text">
-            {isAdmin ? 'Switch to standard user portal?' : 'Switch to platform administrator portal?'}
-          </div>
-          <button
-            type="button"
-            className="btn-swap-portal"
-            onClick={onSwapPortal}
-            title={isAdmin ? 'Swap to User Portal' : 'Swap to Admin Portal'}
-          >
-            <ArrowRightLeft size={16} />
-            <span>{isAdmin ? 'Swap to User Portal (Cyan)' : 'Swap to Admin Portal (Purple)'}</span>
-          </button>
+        {/* Bottom Status Ticker */}
+        <div className="motion-bottom-ticker">
+          <span className="ticker-dot"></span>
+          <span>{isAdmin ? 'SYSTEM AUDIT & MODEL GOVERNANCE ONLINE' : 'HOLISTIC 21-LANDMARK HAND TRACKING ACTIVE'}</span>
         </div>
       </div>
     </div>
