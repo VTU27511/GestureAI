@@ -41,7 +41,7 @@ export const DashboardLayout: React.FC = () => {
 
   return (
     <div className="app-container" style={{ position: 'relative', overflow: 'hidden' }}>
-      {/* Real-time Human Hand Gesture Motion Capture Video Canvas Background */}
+      {/* Real-time Human Hand Gesture Motion Video Background */}
       <MotionBackground
         variant={isAdmin ? 'admin' : 'user'}
         customColor={currentTheme.primary}
@@ -54,22 +54,30 @@ export const DashboardLayout: React.FC = () => {
           <div
             className="brand-icon"
             style={{
-              borderColor: currentTheme.primary,
-              boxShadow: `0 0 16px ${currentTheme.glow}`,
-              color: currentTheme.textAccent,
+              background: 'rgba(15, 23, 42, 0.95)',
+              border: `2px solid ${currentTheme.primary}`,
+              boxShadow: `0 0 18px ${currentTheme.glow}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            <HandMetal size={20} />
+            <HandMetal size={22} color="#ffffff" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }} />
           </div>
           <div>
-            <div className="brand-name">GestureAI</div>
+            <div className="brand-name" style={{ fontWeight: 800, letterSpacing: '0.02em', color: '#ffffff' }}>
+              GestureAI
+            </div>
           </div>
           <span
             className="brand-badge"
             style={{
               borderColor: currentTheme.primary,
-              color: currentTheme.textAccent,
-              background: `rgba(15, 23, 42, 0.7)`,
+              color: '#ffffff',
+              fontWeight: 700,
+              background: `rgba(15, 23, 42, 0.85)`,
+              boxShadow: `0 0 8px ${currentTheme.glow}`,
             }}
           >
             v2.0
@@ -133,7 +141,7 @@ export const DashboardLayout: React.FC = () => {
             <>
               <div
                 className="nav-section-title"
-                style={{ marginTop: '1.25rem', color: currentTheme.textAccent }}
+                style={{ marginTop: '1.25rem', color: currentTheme.textAccent, fontWeight: 700 }}
               >
                 Admin Portal
               </div>
@@ -198,22 +206,62 @@ export const DashboardLayout: React.FC = () => {
           )}
         </nav>
 
-        <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        {/* Sidebar Footer with Highly Visible Profile Avatar */}
+        <div
+          className="sidebar-footer"
+          style={{
+            padding: '1.25rem',
+            background: 'rgba(10, 16, 28, 0.95)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            minHeight: '74px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: 'auto',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div
               className="user-avatar"
               style={{
                 background: currentTheme.gradient,
-                boxShadow: `0 0 10px ${currentTheme.glow}`,
+                boxShadow: `0 0 16px ${currentTheme.glow}`,
+                border: '2px solid #ffffff',
+                width: '42px',
+                height: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
               }}
             >
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              <span
+                style={{
+                  color: '#ffffff',
+                  fontWeight: 900,
+                  fontSize: '1.15rem',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
+                  display: 'block',
+                  lineHeight: 1,
+                }}
+              >
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </span>
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              <div
+                style={{
+                  fontSize: '0.88rem',
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {user?.name}
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
                 @{user?.username}
               </div>
             </div>
@@ -222,14 +270,15 @@ export const DashboardLayout: React.FC = () => {
           <button
             onClick={logout}
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: '#ffffff',
               cursor: 'pointer',
-              padding: '6px',
-              borderRadius: '6px',
+              padding: '8px',
+              borderRadius: '8px',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              transition: 'all 0.2s ease',
             }}
             title="Log Out"
           >

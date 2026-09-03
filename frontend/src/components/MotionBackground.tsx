@@ -362,11 +362,32 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({
 
   return (
     <div className="motion-bg-container">
-      {/* Real-time Human Hand Gesture Motion Capture Canvas */}
-      <canvas ref={canvasRef} className="motion-bg-canvas" />
+      {/* Real Looping HD Motion Video Layer */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        src="/motion_hand.mp4"
+        className="motion-bg-video"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          opacity: 0.42,
+          mixBlendMode: 'screen',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* Real-time Human Hand Gesture Motion Capture Canvas Overlay */}
+      <canvas ref={canvasRef} className="motion-bg-canvas" style={{ position: 'relative', zIndex: 2 }} />
 
       {/* Top Vision Capture HUD Overlay */}
-      <div className="motion-capture-hud">
+      <div className="motion-capture-hud" style={{ zIndex: 3 }}>
         <div className="hud-rec-indicator">
           <span className="rec-dot"></span>
           <span>REC [VISION_AI_CAM_01]</span>
@@ -385,17 +406,19 @@ export const MotionBackground: React.FC<MotionBackgroundProps> = ({
         className="motion-orb orb-1"
         style={{
           background: `radial-gradient(circle, ${customColor || (variant === 'admin' ? '#9333ea' : '#0ea5e9')}, transparent 70%)`,
+          zIndex: 2,
         }}
       />
       <div
         className="motion-orb orb-2"
         style={{
           background: `radial-gradient(circle, ${customSecondary || (variant === 'admin' ? '#ec4899' : '#6366f1')}, transparent 70%)`,
+          zIndex: 2,
         }}
       />
 
       {/* Subtle Central Vignette so centered card pops cleanly */}
-      <div className="motion-bg-overlay" />
+      <div className="motion-bg-overlay" style={{ zIndex: 2 }} />
     </div>
   );
 };
