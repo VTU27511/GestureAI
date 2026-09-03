@@ -1,5 +1,5 @@
 services:
-  # Backend API & WebSocket Service
+  # Python FastAPI Backend
   - type: web
     name: gestureai-api
     runtime: python
@@ -19,14 +19,12 @@ services:
       - key: ALLOWED_ORIGINS
         value: "*"
 
-  # React Frontend Static Website
-  - type: web
+  # React Frontend (Static Site)
+  - type: static_site
     name: gestureai-web
-    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    plan: free
+    publishPath: dist
     routes:
       - type: rewrite
         source: /*
@@ -39,7 +37,7 @@ services:
           property: host
 
 databases:
-  # Free Cloud PostgreSQL Database
+  # Free PostgreSQL Database
   - name: gestureai-database
     databaseName: gestureai_db
     user: gestureai_user
