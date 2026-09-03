@@ -1,4 +1,4 @@
-﻿export type UserRole = 'USER' | 'ADMIN';
+export type UserRole = 'USER' | 'ADMIN';
 
 export interface User {
   id: number;
@@ -15,4 +15,11 @@ export interface UserStats {
   total_samples: number;
   trained_models: number;
   recognition_sessions: number;
+}
+
+export interface UserProfileUpdate {
+  name?: string;
+  email?: string;
+  current_password?: string;
+  new_password?: string;
 }

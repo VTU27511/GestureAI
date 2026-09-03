@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { HandMetal, ShieldCheck, AlertCircle, Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import { MotionBackground } from '../../components/MotionBackground';
 import { Captcha } from '../../components/Captcha';
+import { HandGestureShowcase } from '../../components/HandGestureShowcase';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -62,7 +63,10 @@ export const LoginPage: React.FC = () => {
     <div className="auth-wrapper">
       <MotionBackground variant="user" />
 
-      <div className="auth-card">
+      <div className="auth-split-layout">
+        <HandGestureShowcase variant="user" />
+
+        <div className="auth-card">
         {/* Portal Switcher Tabs */}
         <div className="auth-portal-tabs">
           <div className="auth-portal-tab active user-active">
@@ -165,6 +169,7 @@ export const LoginPage: React.FC = () => {
           <div><strong>Quick Demo Account:</strong></div>
           <div style={{ marginTop: '4px' }}>Username: <code>demo</code> | Password: <code>demo123</code></div>
         </div>
+      </div>
       </div>
     </div>
   );

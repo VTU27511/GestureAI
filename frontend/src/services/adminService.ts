@@ -82,4 +82,9 @@ export const adminService = {
     const response = await api.get<RecognitionLogItem[]>('/api/admin/logs', { params });
     return response.data;
   },
+
+  async adoptGesture(gestureId: number): Promise<{ message: string; gesture_id: number; name: string; copied_samples: number }> {
+    const response = await api.post<{ message: string; gesture_id: number; name: string; copied_samples: number }>(`/api/admin/gestures/${gestureId}/adopt`);
+    return response.data;
+  },
 };

@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { ShieldCheck, Lock, AlertCircle, Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import { MotionBackground } from '../../components/MotionBackground';
 import { Captcha } from '../../components/Captcha';
+import { HandGestureShowcase } from '../../components/HandGestureShowcase';
 
 export const AdminLoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -65,7 +66,10 @@ export const AdminLoginPage: React.FC = () => {
     <div className="auth-wrapper">
       <MotionBackground variant="admin" />
 
-      <div className="auth-card admin-auth-card">
+      <div className="auth-split-layout">
+        <HandGestureShowcase variant="admin" />
+
+        <div className="auth-card admin-auth-card">
         {/* Portal Switcher Tabs */}
         <div className="auth-portal-tabs">
           <Link to="/login" className="auth-portal-tab">
@@ -172,6 +176,7 @@ export const AdminLoginPage: React.FC = () => {
           <div><strong>Authorized Admin Credentials:</strong></div>
           <div style={{ marginTop: '4px' }}>Username: <code>admin</code> | Password: <code>admin123</code></div>
         </div>
+      </div>
       </div>
     </div>
   );

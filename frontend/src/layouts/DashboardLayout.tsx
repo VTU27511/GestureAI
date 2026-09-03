@@ -141,6 +141,14 @@ export const DashboardLayout: React.FC = () => {
                 <FileText size={18} />
                 <span>Recognition Logs</span>
               </NavLink>
+
+              <NavLink
+                to="/user/profile"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              >
+                <UserIcon size={18} />
+                <span>Admin Profile</span>
+              </NavLink>
             </>
           )}
         </nav>

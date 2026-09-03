@@ -22,7 +22,8 @@ from app.services.admin_service import (
     get_all_gestures,
     get_all_training_sessions,
     get_all_models,
-    get_recognition_logs
+    get_recognition_logs,
+    adopt_gesture
 )
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -89,3 +90,11 @@ def list_recognition_logs(
     db: Session = Depends(get_db)
 ):
     return get_recognition_logs(db, user_id=user_id, gesture_id=gesture_id, limit=limit)
+
+@router.post("/gestures/{gesture_id}/adopt")
+def adopt_user_gesture(
+    gesture_id: int,
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    return adopt_gesture(db, admin_id=admin.id, gesture_id=gesture_id)

@@ -292,3 +292,51 @@ def get_recognition_logs(
         )
         for log, u, g in logs
     ]
+
+def adopt_gesture(db: Session, admin_id: int, gesture_id: int) -> dict:
+    source_gesture = db.query(Gesture).filter(Gesture.id == gesture_id).first()
+    if not source_gesture:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target gesture not found.")
+
+    base_name = source_gesture.name
+    existing = db.query(Gesture).filter(Gesture.user_id == admin_id, Gesture.name == base_name).first()
+    target_name = base_name
+    counter = 1
+    while existing:
+        target_name = f"{base_name} (Copy {counter})" if counter > 1 else f"{base_name} (Copy)"
+        existing = db.query(Gesture).filter(Gesture.user_id == admin_id, Gesture.name == target_name).first()
+        counter += 1
+
+    adopted_gesture = Gesture(
+        user_id=admin_id,
+        name=target_name,
+        meaning=source_gesture.meaning,
+        speech_text=source_gesture.speech_text,
+        gesture_type=source_gesture.gesture_type,
+        object_name=source_gesture.object_name,
+    )
+    db.add(adopted_gesture)
+    db.flush()
+
+    source_samples = db.query(TrainingSample).filter(TrainingSample.gesture_id == gesture_id).all()
+    copied_count = 0
+    for s in source_samples:
+        new_sample = TrainingSample(
+            gesture_id=adopted_gesture.id,
+            landmarks=s.landmarks,
+            object_present=s.object_present,
+            object_name=s.object_name,
+            hand_type=s.hand_type
+        )
+        db.add(new_sample)
+        copied_count += 1
+
+    db.commit()
+    db.refresh(adopted_gesture)
+
+    return {
+        "message": f"Successfully adopted gesture '{source_gesture.name}' into your library as '{target_name}'.",
+        "gesture_id": adopted_gesture.id,
+        "name": adopted_gesture.name,
+        "copied_samples": copied_count
+    }
