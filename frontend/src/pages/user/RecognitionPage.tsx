@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gestureService, ActiveModelInfo } from '../../services/gestureService';
 import { recognitionService } from '../../services/recognitionService';
@@ -15,7 +15,10 @@ import {
   Clock,
   CheckCircle,
   Wifi,
-  WifiOff
+  WifiOff,
+  Sparkles,
+  Globe,
+  VolumeX
 } from 'lucide-react';
 
 export const RecognitionPage: React.FC = () => {
@@ -31,9 +34,15 @@ export const RecognitionPage: React.FC = () => {
   const [confidence, setConfidence] = useState<number>(0);
   const [meaning, setMeaning] = useState<string>('');
   const [speechText, setSpeechText] = useState<string>('');
+  const [teluguText, setTeluguText] = useState<string>('');
   const [fps, setFps] = useState<number>(0);
   const [handCount, setHandCount] = useState<number>(0);
   const [threshold, setThreshold] = useState<number>(85); // 85% default
+
+  // Voice Language Preference (Telugu default for proper fluency)
+  const [voiceLanguage, setVoiceLanguage] = useState<'te' | 'en'>('te');
+  const [isTestingVoice, setIsTestingVoice] = useState(false);
+  const [browserVoiceEnabled, setBrowserVoiceEnabled] = useState(true);
 
   // Connection state
   const [connStatus, setConnStatus] = useState<'CONNECTED' | 'DISCONNECTED' | 'RECONNECTING'>('DISCONNECTED');
@@ -65,6 +74,54 @@ export const RecognitionPage: React.FC = () => {
     fetchModelAndLogs();
   }, []);
 
+  const handleLanguageChange = (lang: 'te' | 'en') => {
+    setVoiceLanguage(lang);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ action: 'set_language', language: lang }));
+    }
+  };
+
+  const playBrowserAudio = (text: string, lang: 'te' | 'en') => {
+    if (!browserVoiceEnabled || !window.speechSynthesis || !text) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      if (lang === 'te') {
+        utterance.lang = 'te-IN';
+        const voices = window.speechSynthesis.getVoices();
+        const teVoice = voices.find(
+          (v) => v.lang.startsWith('te') || v.name.toLowerCase().includes('telugu')
+        );
+        if (teVoice) utterance.voice = teVoice;
+      } else {
+        utterance.lang = 'en-US';
+      }
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('Browser speech synthesis error', e);
+    }
+  };
+
+  const testVoice = async () => {
+    setIsTestingVoice(true);
+    const phrase =
+      voiceLanguage === 'te'
+        ? 'నమస్కారం! గెస్చర్ ఏఐ తెలుగు వాయిస్ అద్భుతంగా పనిచేస్తోంది.'
+        : 'Hello! GestureAI speech synthesis is working properly.';
+
+    try {
+      await recognitionService.testSpeech(phrase, voiceLanguage);
+      playBrowserAudio(phrase, voiceLanguage);
+    } catch (err) {
+      console.error('Test speech error', err);
+      // Fallback to browser synthesis
+      playBrowserAudio(phrase, voiceLanguage);
+    } finally {
+      setTimeout(() => setIsTestingVoice(false), 1200);
+    }
+  };
+
   const startRecognition = () => {
     if (wsRef.current) {
       wsRef.current.close();
@@ -84,6 +141,8 @@ export const RecognitionPage: React.FC = () => {
       setConnStatus('CONNECTED');
       setWsError(null);
       setIsRecognizing(true);
+      // Configure active voice language
+      ws.send(JSON.stringify({ action: 'set_language', language: voiceLanguage }));
     };
 
     ws.onmessage = (event) => {
@@ -104,6 +163,12 @@ export const RecognitionPage: React.FC = () => {
           setConfidence(data.confidence);
           setMeaning(data.meaning);
           setSpeechText(data.speech_text);
+          setTeluguText(data.telugu_text || '');
+
+          // Also trigger client-side audio for instant headphones/browser output
+          if (data.spoken_phrase) {
+            playBrowserAudio(data.spoken_phrase, voiceLanguage);
+          }
 
           // Periodically refresh personal log history
           if (Math.random() < 0.15) {
@@ -114,6 +179,7 @@ export const RecognitionPage: React.FC = () => {
           setConfidence(data.confidence);
           setMeaning('');
           setSpeechText('');
+          setTeluguText('');
         }
 
         setFps(data.fps);
@@ -148,6 +214,8 @@ export const RecognitionPage: React.FC = () => {
     setFrameSrc('');
     setDetectedGesture('UNKNOWN');
     setConfidence(0);
+    setTeluguText('');
+    setSpeechText('');
     // Refresh log table
     recognitionService.getMyLogs(10).then((logs) => setPersonalLogs(logs)).catch(() => {});
   };
@@ -165,18 +233,16 @@ export const RecognitionPage: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Page Header */}
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 700, color: '#fff' }}>
-            Real-Time Gesture Recognition & Offline Speech
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Live webcam landmark inference using your personal machine learning model
+          <h1 className="page-title">Live Gesture Recognition</h1>
+          <p className="page-subtitle">
+            Continuous real-time MediaPipe computer vision inference with fluent Telugu voice synthesis
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Connection Status Badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span className={`badge ${
             connStatus === 'CONNECTED'
               ? 'badge-emerald'
@@ -253,7 +319,7 @@ export const RecognitionPage: React.FC = () => {
               <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
                 <Video size={54} style={{ marginBottom: '0.75rem', opacity: 0.5 }} />
                 <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '0.35rem' }}>Camera Standby</h3>
-                <p style={{ fontSize: '0.88rem' }}>Click START RECOGNITION below to start camera and speech output</p>
+                <p style={{ fontSize: '0.88rem' }}>Click START RECOGNITION below to begin live camera detection and Telugu voice</p>
               </div>
             )}
           </div>
@@ -279,7 +345,7 @@ export const RecognitionPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Prediction HUD, Speech Output & Confidence Slider */}
+        {/* Right Column: Prediction HUD, Fluent Telugu Speech & Controls */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* Main Detected Gesture Card */}
           <div className="card" style={{
@@ -340,26 +406,137 @@ export const RecognitionPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Speech Engine Status */}
+          {/* Fluent Voice Engine Status Card (Telugu & English) */}
           <div className="card">
-            <div className="card-header">
+            <div className="card-header" style={{ marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Volume2 size={18} style={{ color: 'var(--accent-emerald)' }} />
-                <h3 className="card-title" style={{ fontSize: '1.05rem' }}>Windows Speech Engine</h3>
+                <h3 className="card-title" style={{ fontSize: '1.05rem' }}>Voice Speech Engine</h3>
               </div>
-              <span className="badge badge-emerald">Offline SAPI</span>
-            </div>
-
-            <div className="gesture-info-row">
-              <span>Last Spoken Word</span>
-              <span style={{ color: '#fff', fontStyle: 'italic', fontWeight: 600 }}>
-                {speechText ? `"${speechText}"` : 'â€”'}
+              <span className="badge badge-emerald" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Sparkles size={11} /> Fluent Telugu Active
               </span>
             </div>
 
-            <div className="gesture-info-row">
-              <span>Duplicate Suppression</span>
-              <span style={{ color: 'var(--accent-emerald)', fontWeight: 600 }}>Active (2.0s Cooldown)</span>
+            {/* Language Selector Tabs */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button
+                type="button"
+                className={`btn btn-sm ${voiceLanguage === 'te' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.45rem',
+                  fontSize: '0.84rem',
+                  padding: '0.45rem',
+                  background: voiceLanguage === 'te' ? 'linear-gradient(135deg, #10b981, #059669)' : undefined,
+                  borderColor: voiceLanguage === 'te' ? '#10b981' : undefined
+                }}
+                onClick={() => handleLanguageChange('te')}
+              >
+                <span style={{ fontSize: '1.05rem' }}>🇮🇳</span>
+                <span style={{ fontWeight: 700 }}>తెలుగు (Telugu)</span>
+              </button>
+
+              <button
+                type="button"
+                className={`btn btn-sm ${voiceLanguage === 'en' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.45rem',
+                  fontSize: '0.84rem',
+                  padding: '0.45rem'
+                }}
+                onClick={() => handleLanguageChange('en')}
+              >
+                <span style={{ fontSize: '1.05rem' }}>🇬🇧</span>
+                <span style={{ fontWeight: 600 }}>English</span>
+              </button>
+            </div>
+
+            {/* Live Fluent Speech Output Box */}
+            <div style={{
+              background: 'rgba(16, 185, 129, 0.08)',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              borderRadius: 'var(--radius-md)',
+              padding: '0.85rem 1rem',
+              marginBottom: '1rem'
+            }}>
+              <div style={{
+                fontSize: '0.74rem',
+                color: 'var(--accent-emerald)',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                marginBottom: '0.35rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}>
+                <Globe size={13} />
+                {voiceLanguage === 'te' ? 'Fluent Telugu Speech Output' : 'English Speech Output'}
+              </div>
+
+              <div style={{
+                fontSize: voiceLanguage === 'te' ? '1.35rem' : '1.15rem',
+                fontWeight: 800,
+                color: '#ffffff',
+                minHeight: '2rem',
+                lineHeight: 1.35,
+                textShadow: '0 0 12px rgba(16, 185, 129, 0.4)'
+              }}>
+                {voiceLanguage === 'te'
+                  ? (teluguText ? `"${teluguText}"` : 'సంజ్ఞ కోసం వేచి చూస్తోంది...')
+                  : (speechText ? `"${speechText}"` : 'Waiting for gesture...')}
+              </div>
+
+              {voiceLanguage === 'te' && speechText && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.4rem', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '0.35rem' }}>
+                  English: "{speechText}"
+                </div>
+              )}
+            </div>
+
+            {/* Speech Controls & Test Button */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.45rem',
+                  fontSize: '0.82rem',
+                  padding: '0.45rem 0.75rem'
+                }}
+                onClick={testVoice}
+                disabled={isTestingVoice}
+              >
+                <Volume2 size={14} style={{ color: 'var(--accent-emerald)' }} />
+                <span>{isTestingVoice ? 'వాయిస్ ప్లే అవుతోంది...' : '🔊 Test Telugu Voice'}</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{
+                  padding: '0.45rem 0.65rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  color: browserVoiceEnabled ? 'var(--accent-cyan)' : 'var(--text-muted)'
+                }}
+                onClick={() => setBrowserVoiceEnabled(!browserVoiceEnabled)}
+                title={browserVoiceEnabled ? 'Browser Web Audio: ON' : 'Browser Web Audio: OFF'}
+              >
+                {browserVoiceEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+              </button>
             </div>
           </div>
 
@@ -374,7 +551,7 @@ export const RecognitionPage: React.FC = () => {
             </div>
 
             <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '0.75rem' }}>
-              Predictions with confidence below {threshold}% will display as UNKNOWN and will not trigger offline voice synthesis.
+              Predictions with confidence below {threshold}% will display as UNKNOWN and will not trigger voice synthesis.
             </p>
 
             <input
@@ -395,42 +572,46 @@ export const RecognitionPage: React.FC = () => {
         <div className="card-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Clock size={18} style={{ color: 'var(--accent-cyan)' }} />
-            <h3 className="card-title">My Recent Recognition History</h3>
+            <h2 className="card-title">My Recent Recognitions</h2>
           </div>
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-            Latest {personalLogs.length} events
-          </span>
+          <span className="badge badge-gray">{personalLogs.length} Records</span>
         </div>
 
         {personalLogs.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', padding: '1rem 0' }}>
-            No recognition history recorded yet. Start live recognition and perform your gestures to record events.
-          </p>
+          <div className="empty-state">
+            <CheckCircle size={36} style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }} />
+            <p>No recent recognition events recorded yet. Start camera detection above!</p>
+          </div>
         ) : (
-          <div className="table-container">
+          <div className="table-responsive">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Log ID</th>
-                  <th>Recognized Gesture</th>
-                  <th>Confidence</th>
                   <th>Timestamp</th>
+                  <th>Detected Gesture</th>
+                  <th>Confidence</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {personalLogs.map((log) => (
                   <tr key={log.id}>
-                    <td style={{ color: 'var(--text-muted)', fontFamily: 'monospace' }}>#{log.id}</td>
-                    <td>
-                      <span style={{ fontWeight: 700, color: '#fff' }}>{log.gesture_name}</span>
+                    <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      {new Date(log.recognized_at).toLocaleTimeString()}
                     </td>
                     <td>
-                      <span style={{ fontWeight: 700, color: log.confidence >= 85 ? 'var(--accent-emerald)' : 'var(--accent-amber)' }}>
+                      <span className="badge badge-cyan">{log.gesture_name}</span>
+                    </td>
+                    <td>
+                      <span style={{
+                        fontWeight: 600,
+                        color: log.confidence >= 85 ? 'var(--accent-emerald)' : 'var(--accent-amber)'
+                      }}>
                         {log.confidence.toFixed(1)}%
                       </span>
                     </td>
-                    <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      {new Date(log.recognized_at).toLocaleString()}
+                    <td>
+                      <span className="badge badge-emerald">Recognized</span>
                     </td>
                   </tr>
                 ))}

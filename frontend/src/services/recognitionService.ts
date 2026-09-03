@@ -8,4 +8,9 @@ export const recognitionService = {
     });
     return response.data;
   },
+
+  async testSpeech(text?: string, lang: string = 'te'): Promise<{ status: string; spoken: string; lang: string }> {
+    const response = await api.post('/api/recognition/speech/test', { text, lang });
+    return response.data;
+  },
 };

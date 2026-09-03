@@ -221,10 +221,11 @@ async def ws_recognition(
         fps = 30.0
         last_logged_gesture = None
         last_log_time = 0.0
+        voice_language = "te"  # Default to fluent Telugu speech
 
-        # Background listener for stop/start controls
+        # Background listener for stop/start/language controls
         async def message_listener():
-            nonlocal is_running
+            nonlocal is_running, voice_language
             try:
                 while True:
                     text = await websocket.receive_text()
@@ -233,6 +234,8 @@ async def ws_recognition(
                         is_running = False
                     elif msg.get("action") == "start":
                         is_running = True
+                    elif msg.get("action") == "set_language":
+                        voice_language = msg.get("language", "te")
             except Exception:
                 pass
 
@@ -262,6 +265,8 @@ async def ws_recognition(
                 confidence = 0.0
                 meaning = ""
                 speech_text = ""
+                telugu_text = ""
+                spoken_phrase = ""
 
                 if hand_count > 0:
                     # Extract single-hand or two-hand vector based on hand count
@@ -283,11 +288,15 @@ async def ws_recognition(
                                 meaning = pred_name
                                 speech_text = pred_name
 
-                            # Offline Windows SAPI Speech (non-blocking)
-                            speech_engine.process_recognition(
+                            # Get fluent Telugu translation
+                            telugu_text = speech_engine.to_fluent_telugu(detected_gesture, speech_text)
+
+                            # Fluent Speech Output (Telugu default or English)
+                            was_spoken, spoken_phrase = speech_engine.process_recognition(
                                 detected_gesture,
                                 speech_text,
-                                confidence
+                                confidence,
+                                language=voice_language
                             )
 
                             # Record Recognition Log (throttled)
@@ -334,6 +343,9 @@ async def ws_recognition(
                     "confidence": round(confidence * 100, 1),
                     "meaning": meaning,
                     "speech_text": speech_text,
+                    "telugu_text": telugu_text,
+                    "voice_language": voice_language,
+                    "spoken_phrase": spoken_phrase if detected_gesture != "UNKNOWN" else "",
                     "fps": round(fps, 1),
                     "hand_count": hand_count,
                     "status": "RECOGNIZING",

@@ -29,6 +29,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Speech synthesis cache
+backend/speech_cache/
+speech_cache/
+
 # System files
 .DS_Store
 Thumbs.db

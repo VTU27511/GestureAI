@@ -1,4 +1,5 @@
 from typing import List, Optional
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.database.session import get_db
@@ -66,3 +67,25 @@ def record_recognition_event(
     db.add(new_log)
     db.commit()
     return {"status": "recorded", "log_id": new_log.id}
+
+
+class SpeechTestRequest(BaseModel):
+    text: Optional[str] = "నమస్కారం! గెస్చర్ ఏఐ కి స్వాగతం."
+    lang: Optional[str] = "te"
+
+
+@router.post("/speech/test")
+def test_speech(req: SpeechTestRequest):
+    """
+    Triggers immediate fluent Telugu or English speech synthesis on host speaker.
+    """
+    from app.services.speech_service import SpeechEngine
+    engine = SpeechEngine.get_instance()
+    text = req.text or "నమస్కారం! గెస్చర్ ఏఐ కి స్వాగతం."
+    lang = req.lang or "te"
+    if lang == "te":
+        utterance = engine.to_fluent_telugu("", text)
+    else:
+        utterance = text
+    engine.speak(utterance, lang=lang)
+    return {"status": "ok", "spoken": utterance, "lang": lang}
