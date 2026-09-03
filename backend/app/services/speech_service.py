@@ -173,18 +173,10 @@ class SpeechEngine:
                 text, lang = item
 
                 if lang == "te" or self.is_telugu_script(text):
-                    # Fluent Telugu synthesis & playback
+                    # Fluent Telugu synthesis & playback ONLY (never invoke English SAPI)
                     audio_path = self._synthesize_telugu_gtts(text)
-                    success = False
                     if audio_path:
-                        success = self._play_audio_file(audio_path)
-
-                    if not success and speaker is not None:
-                        # Fallback to SAPI
-                        try:
-                            speaker.Speak(text, 0)
-                        except Exception:
-                            pass
+                        self._play_audio_file(audio_path)
                 else:
                     # English / default speech via Windows SAPI
                     if speaker is not None:

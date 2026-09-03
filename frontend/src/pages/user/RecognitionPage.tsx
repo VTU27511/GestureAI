@@ -17,8 +17,7 @@ import {
   Wifi,
   WifiOff,
   Sparkles,
-  Globe,
-  VolumeX
+  Globe
 } from 'lucide-react';
 
 export const RecognitionPage: React.FC = () => {
@@ -42,7 +41,6 @@ export const RecognitionPage: React.FC = () => {
   // Voice Language Preference (Telugu default for proper fluency)
   const [voiceLanguage, setVoiceLanguage] = useState<'te' | 'en'>('te');
   const [isTestingVoice, setIsTestingVoice] = useState(false);
-  const [browserVoiceEnabled, setBrowserVoiceEnabled] = useState(true);
 
   // Connection state
   const [connStatus, setConnStatus] = useState<'CONNECTED' | 'DISCONNECTED' | 'RECONNECTING'>('DISCONNECTED');
@@ -81,28 +79,6 @@ export const RecognitionPage: React.FC = () => {
     }
   };
 
-  const playBrowserAudio = (text: string, lang: 'te' | 'en') => {
-    if (!browserVoiceEnabled || !window.speechSynthesis || !text) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      if (lang === 'te') {
-        utterance.lang = 'te-IN';
-        const voices = window.speechSynthesis.getVoices();
-        const teVoice = voices.find(
-          (v) => v.lang.startsWith('te') || v.name.toLowerCase().includes('telugu')
-        );
-        if (teVoice) utterance.voice = teVoice;
-      } else {
-        utterance.lang = 'en-US';
-      }
-      utterance.rate = 0.95;
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      console.warn('Browser speech synthesis error', e);
-    }
-  };
-
   const testVoice = async () => {
     setIsTestingVoice(true);
     const phrase =
@@ -112,11 +88,8 @@ export const RecognitionPage: React.FC = () => {
 
     try {
       await recognitionService.testSpeech(phrase, voiceLanguage);
-      playBrowserAudio(phrase, voiceLanguage);
     } catch (err) {
       console.error('Test speech error', err);
-      // Fallback to browser synthesis
-      playBrowserAudio(phrase, voiceLanguage);
     } finally {
       setTimeout(() => setIsTestingVoice(false), 1200);
     }
@@ -164,11 +137,6 @@ export const RecognitionPage: React.FC = () => {
           setMeaning(data.meaning);
           setSpeechText(data.speech_text);
           setTeluguText(data.telugu_text || '');
-
-          // Also trigger client-side audio for instant headphones/browser output
-          if (data.spoken_phrase) {
-            playBrowserAudio(data.spoken_phrase, voiceLanguage);
-          }
 
           // Periodically refresh personal log history
           if (Math.random() < 0.15) {
@@ -508,34 +476,19 @@ export const RecognitionPage: React.FC = () => {
                 type="button"
                 className="btn btn-secondary btn-sm"
                 style={{
-                  flex: 1,
+                  width: '100%',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '0.45rem',
-                  fontSize: '0.82rem',
-                  padding: '0.45rem 0.75rem'
+                  fontSize: '0.86rem',
+                  padding: '0.55rem 1rem'
                 }}
                 onClick={testVoice}
                 disabled={isTestingVoice}
               >
-                <Volume2 size={14} style={{ color: 'var(--accent-emerald)' }} />
-                <span>{isTestingVoice ? 'వాయిస్ ప్లే అవుతోంది...' : '🔊 Test Telugu Voice'}</span>
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                style={{
-                  padding: '0.45rem 0.65rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  color: browserVoiceEnabled ? 'var(--accent-cyan)' : 'var(--text-muted)'
-                }}
-                onClick={() => setBrowserVoiceEnabled(!browserVoiceEnabled)}
-                title={browserVoiceEnabled ? 'Browser Web Audio: ON' : 'Browser Web Audio: OFF'}
-              >
-                {browserVoiceEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                <Volume2 size={16} style={{ color: 'var(--accent-emerald)' }} />
+                <span>{isTestingVoice ? 'వాయిస్ ప్లే అవుతోంది...' : (voiceLanguage === 'te' ? '🔊 Test Telugu Voice (తెలుగు వాయిస్ వినండి)' : '🔊 Test English Voice')}</span>
               </button>
             </div>
           </div>
