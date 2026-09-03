@@ -324,9 +324,7 @@ def adopt_gesture(db: Session, admin_id: int, gesture_id: int) -> dict:
         new_sample = TrainingSample(
             gesture_id=adopted_gesture.id,
             landmarks=s.landmarks,
-            object_present=s.object_present,
-            object_name=s.object_name,
-            hand_type=s.hand_type
+            hand_count=s.hand_count if hasattr(s, 'hand_count') else 1
         )
         db.add(new_sample)
         copied_count += 1
