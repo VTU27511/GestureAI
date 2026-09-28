@@ -69,23 +69,54 @@ def record_recognition_event(
     return {"status": "recorded", "log_id": new_log.id}
 
 
+import os
+from fastapi.responses import FileResponse
+
 class SpeechTestRequest(BaseModel):
-    text: Optional[str] = "నమస్కారం! గెస్చర్ ఏఐ కి స్వాగతం."
+    text: Optional[str] = None
     lang: Optional[str] = "te"
 
 
 @router.post("/speech/test")
 def test_speech(req: SpeechTestRequest):
     """
-    Triggers immediate fluent Telugu or English speech synthesis on host speaker.
+    Synthesizes fluent Telugu, Tamil, or English speech.
+    Returns audio_base64 for immediate browser playback AND plays on host system.
     """
     from app.services.speech_service import SpeechEngine
     engine = SpeechEngine.get_instance()
-    text = req.text or "నమస్కారం! గెస్చర్ ఏఐ కి స్వాగతం."
     lang = req.lang or "te"
-    if lang == "te":
-        utterance = engine.to_fluent_telugu("", text)
-    else:
-        utterance = text
-    engine.speak(utterance, lang=lang)
-    return {"status": "ok", "spoken": utterance, "lang": lang}
+
+    default_texts = {
+        "te": "నమస్కారం! గెస్చర్ ఏఐ తెలుగు వాయిస్ అద్భుతంగా పనిచేస్తోంది.",
+        "ta": "வணக்கம்! கெஸ்ச்சர் ஏஐ தமிழ் குரல் சிறப்பாக செயல்படுகிறது.",
+        "en": "Hello! GestureAI speech synthesis is working properly."
+    }
+
+    raw_text = req.text or default_texts.get(lang, "Hello! Welcome to GestureAI.")
+    utterance = engine.to_fluent_phrase("", raw_text, language=lang)
+    audio_path, audio_b64 = engine.get_synthesized_audio(utterance, lang=lang)
+
+    if audio_path:
+        engine._play_audio_file(audio_path)
+
+    return {
+        "status": "ok",
+        "spoken": utterance,
+        "lang": lang,
+        "audio_base64": audio_b64
+    }
+
+
+@router.get("/speech/stream")
+def stream_speech(text: str, lang: str = "te"):
+    """
+    Streams synthesized MP3 audio directly to browser HTML5 Audio player.
+    """
+    from app.services.speech_service import SpeechEngine
+    engine = SpeechEngine.get_instance()
+    utterance = engine.to_fluent_phrase("", text, language=lang)
+    audio_path, _ = engine.get_synthesized_audio(utterance, lang=lang)
+    if audio_path and os.path.exists(audio_path):
+        return FileResponse(audio_path, media_type="audio/mpeg", filename=f"speech_{lang}.mp3")
+    return {"error": "Failed to synthesize speech"}

@@ -34,12 +34,13 @@ export const RecognitionPage: React.FC = () => {
   const [meaning, setMeaning] = useState<string>('');
   const [speechText, setSpeechText] = useState<string>('');
   const [teluguText, setTeluguText] = useState<string>('');
+  const [tamilText, setTamilText] = useState<string>('');
   const [fps, setFps] = useState<number>(0);
   const [handCount, setHandCount] = useState<number>(0);
   const [threshold, setThreshold] = useState<number>(85); // 85% default
 
-  // Voice Language Preference (Telugu default for proper fluency)
-  const [voiceLanguage, setVoiceLanguage] = useState<'te' | 'en'>('te');
+  // Voice Language Preference (Telugu default, now with Tamil and English)
+  const [voiceLanguage, setVoiceLanguage] = useState<'te' | 'ta' | 'en'>('te');
   const [isTestingVoice, setIsTestingVoice] = useState(false);
 
   // Connection state
@@ -51,6 +52,22 @@ export const RecognitionPage: React.FC = () => {
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
+
+  const playAudio = (audioBase64?: string, fallbackUrl?: string) => {
+    try {
+      if (audioBase64) {
+        const audio = new Audio(audioBase64);
+        audio.play().catch((e) => console.warn('Browser audio playback prevented or deferred:', e));
+        return;
+      }
+      if (fallbackUrl) {
+        const audio = new Audio(fallbackUrl);
+        audio.play().catch((e) => console.warn('Browser audio stream error:', e));
+      }
+    } catch (err) {
+      console.error('Audio play error:', err);
+    }
+  };
 
   const fetchModelAndLogs = async () => {
     try {
@@ -72,7 +89,7 @@ export const RecognitionPage: React.FC = () => {
     fetchModelAndLogs();
   }, []);
 
-  const handleLanguageChange = (lang: 'te' | 'en') => {
+  const handleLanguageChange = (lang: 'te' | 'ta' | 'en') => {
     setVoiceLanguage(lang);
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ action: 'set_language', language: lang }));
@@ -81,15 +98,25 @@ export const RecognitionPage: React.FC = () => {
 
   const testVoice = async () => {
     setIsTestingVoice(true);
-    const phrase =
-      voiceLanguage === 'te'
-        ? 'నమస్కారం! గెస్చర్ ఏఐ తెలుగు వాయిస్ అద్భుతంగా పనిచేస్తోంది.'
-        : 'Hello! GestureAI speech synthesis is working properly.';
+    const phrases: Record<string, string> = {
+      te: 'నమస్కారం! గెస్చర్ ఏఐ తెలుగు వాయిస్ అద్భుతంగా పనిచేస్తోంది.',
+      ta: 'வணக்கம்! கெஸ்ச்சர் ஏஐ தமிழ் குரல் சிறப்பாக செயல்படுகிறது.',
+      en: 'Hello! GestureAI speech synthesis is working properly.'
+    };
+    const phrase = phrases[voiceLanguage] || phrases.te;
 
     try {
-      await recognitionService.testSpeech(phrase, voiceLanguage);
+      const res = await recognitionService.testSpeech(phrase, voiceLanguage);
+      if (res && res.audio_base64) {
+        playAudio(res.audio_base64);
+      } else {
+        const streamUrl = recognitionService.getAudioStreamUrl(phrase, voiceLanguage);
+        playAudio(undefined, streamUrl);
+      }
     } catch (err) {
       console.error('Test speech error', err);
+      const streamUrl = recognitionService.getAudioStreamUrl(phrase, voiceLanguage);
+      playAudio(undefined, streamUrl);
     } finally {
       setTimeout(() => setIsTestingVoice(false), 1200);
     }
@@ -137,6 +164,12 @@ export const RecognitionPage: React.FC = () => {
           setMeaning(data.meaning);
           setSpeechText(data.speech_text);
           setTeluguText(data.telugu_text || '');
+          setTamilText(data.tamil_text || '');
+
+          // Play synthesized audio directly through browser speakers
+          if (data.audio_base64) {
+            playAudio(data.audio_base64);
+          }
 
           // Periodically refresh personal log history
           if (Math.random() < 0.15) {
@@ -148,6 +181,7 @@ export const RecognitionPage: React.FC = () => {
           setMeaning('');
           setSpeechText('');
           setTeluguText('');
+          setTamilText('');
         }
 
         setFps(data.fps);
@@ -382,12 +416,12 @@ export const RecognitionPage: React.FC = () => {
                 <h3 className="card-title" style={{ fontSize: '1.05rem' }}>Voice Speech Engine</h3>
               </div>
               <span className="badge badge-emerald" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Sparkles size={11} /> Fluent Telugu Active
+                <Sparkles size={11} /> {voiceLanguage === 'te' ? 'Fluent Telugu Active' : voiceLanguage === 'ta' ? 'Fluent Tamil Active' : 'English Active'}
               </span>
             </div>
 
             {/* Language Selector Tabs */}
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
               <button
                 type="button"
                 className={`btn btn-sm ${voiceLanguage === 'te' ? 'btn-primary' : 'btn-secondary'}`}
@@ -396,16 +430,36 @@ export const RecognitionPage: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.45rem',
-                  fontSize: '0.84rem',
-                  padding: '0.45rem',
+                  gap: '0.35rem',
+                  fontSize: '0.8rem',
+                  padding: '0.45rem 0.35rem',
                   background: voiceLanguage === 'te' ? 'linear-gradient(135deg, #10b981, #059669)' : undefined,
                   borderColor: voiceLanguage === 'te' ? '#10b981' : undefined
                 }}
                 onClick={() => handleLanguageChange('te')}
               >
-                <span style={{ fontSize: '1.05rem' }}>🇮🇳</span>
-                <span style={{ fontWeight: 700 }}>తెలుగు (Telugu)</span>
+                <span style={{ fontSize: '1rem' }}>🇮🇳</span>
+                <span style={{ fontWeight: 700 }}>తెలుగు</span>
+              </button>
+
+              <button
+                type="button"
+                className={`btn btn-sm ${voiceLanguage === 'ta' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  fontSize: '0.8rem',
+                  padding: '0.45rem 0.35rem',
+                  background: voiceLanguage === 'ta' ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : undefined,
+                  borderColor: voiceLanguage === 'ta' ? '#8b5cf6' : undefined
+                }}
+                onClick={() => handleLanguageChange('ta')}
+              >
+                <span style={{ fontSize: '1rem' }}>🇮🇳</span>
+                <span style={{ fontWeight: 700 }}>தமிழ்</span>
               </button>
 
               <button
@@ -416,13 +470,15 @@ export const RecognitionPage: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.45rem',
-                  fontSize: '0.84rem',
-                  padding: '0.45rem'
+                  gap: '0.35rem',
+                  fontSize: '0.8rem',
+                  padding: '0.45rem 0.35rem',
+                  background: voiceLanguage === 'en' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : undefined,
+                  borderColor: voiceLanguage === 'en' ? '#06b6d4' : undefined
                 }}
                 onClick={() => handleLanguageChange('en')}
               >
-                <span style={{ fontSize: '1.05rem' }}>🇬🇧</span>
+                <span style={{ fontSize: '1rem' }}>🇬🇧</span>
                 <span style={{ fontWeight: 600 }}>English</span>
               </button>
             </div>
@@ -437,7 +493,7 @@ export const RecognitionPage: React.FC = () => {
             }}>
               <div style={{
                 fontSize: '0.74rem',
-                color: 'var(--accent-emerald)',
+                color: voiceLanguage === 'ta' ? 'var(--accent-purple)' : voiceLanguage === 'en' ? 'var(--accent-cyan)' : 'var(--accent-emerald)',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
@@ -447,11 +503,15 @@ export const RecognitionPage: React.FC = () => {
                 gap: '0.35rem'
               }}>
                 <Globe size={13} />
-                {voiceLanguage === 'te' ? 'Fluent Telugu Speech Output' : 'English Speech Output'}
+                {voiceLanguage === 'te'
+                  ? 'Fluent Telugu Speech Output (తెలుగు)'
+                  : voiceLanguage === 'ta'
+                  ? 'Fluent Tamil Speech Output (தமிழ்)'
+                  : 'English Speech Output'}
               </div>
 
               <div style={{
-                fontSize: voiceLanguage === 'te' ? '1.35rem' : '1.15rem',
+                fontSize: voiceLanguage !== 'en' ? '1.35rem' : '1.15rem',
                 fontWeight: 800,
                 color: '#ffffff',
                 minHeight: '2rem',
@@ -460,10 +520,12 @@ export const RecognitionPage: React.FC = () => {
               }}>
                 {voiceLanguage === 'te'
                   ? (teluguText ? `"${teluguText}"` : 'సంజ్ఞ కోసం వేచి చూస్తోంది...')
+                  : voiceLanguage === 'ta'
+                  ? (tamilText ? `"${tamilText}"` : 'சைகைக்காக காத்திருக்கிறது...')
                   : (speechText ? `"${speechText}"` : 'Waiting for gesture...')}
               </div>
 
-              {voiceLanguage === 'te' && speechText && (
+              {voiceLanguage !== 'en' && speechText && (
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.4rem', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '0.35rem' }}>
                   English: "{speechText}"
                 </div>
@@ -488,7 +550,15 @@ export const RecognitionPage: React.FC = () => {
                 disabled={isTestingVoice}
               >
                 <Volume2 size={16} style={{ color: 'var(--accent-emerald)' }} />
-                <span>{isTestingVoice ? 'వాయిస్ ప్లే అవుతోంది...' : (voiceLanguage === 'te' ? '🔊 Test Telugu Voice (తెలుగు వాయిస్ వినండి)' : '🔊 Test English Voice')}</span>
+                <span>
+                  {isTestingVoice
+                    ? (voiceLanguage === 'te' ? 'వాయిస్ ప్లే అవుతోంది...' : voiceLanguage === 'ta' ? 'குரல் ஒலிக்கிறது...' : 'Playing voice...')
+                    : (voiceLanguage === 'te'
+                        ? '🔊 Test Telugu Voice (తెలుగు వాయిస్ వినండి)'
+                        : voiceLanguage === 'ta'
+                        ? '🔊 Test Tamil Voice (தமிழ் குரல் கேட்கவும்)'
+                        : '🔊 Test English Voice')}
+                </span>
               </button>
             </div>
           </div>

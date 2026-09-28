@@ -266,7 +266,9 @@ async def ws_recognition(
                 meaning = ""
                 speech_text = ""
                 telugu_text = ""
+                tamil_text = ""
                 spoken_phrase = ""
+                audio_base64 = ""
 
                 if hand_count > 0:
                     # Extract single-hand or two-hand vector based on hand count
@@ -288,16 +290,21 @@ async def ws_recognition(
                                 meaning = pred_name
                                 speech_text = pred_name
 
-                            # Get fluent Telugu translation
+                            # Get fluent translations
                             telugu_text = speech_engine.to_fluent_telugu(detected_gesture, speech_text)
+                            tamil_text = speech_engine.to_fluent_tamil(detected_gesture, speech_text)
 
-                            # Fluent Speech Output (Telugu default or English)
-                            was_spoken, spoken_phrase = speech_engine.process_recognition(
+                            # Fluent Speech Output (Telugu, Tamil, or English)
+                            res = speech_engine.process_recognition(
                                 detected_gesture,
                                 speech_text,
                                 confidence,
                                 language=voice_language
                             )
+                            was_spoken = res.was_spoken
+                            spoken_phrase = res.spoken_phrase
+                            if was_spoken and res.audio_base64:
+                                audio_base64 = res.audio_base64
 
                             # Record Recognition Log (throttled)
                             now_log = time.time()
@@ -344,8 +351,10 @@ async def ws_recognition(
                     "meaning": meaning,
                     "speech_text": speech_text,
                     "telugu_text": telugu_text,
+                    "tamil_text": tamil_text,
                     "voice_language": voice_language,
                     "spoken_phrase": spoken_phrase if detected_gesture != "UNKNOWN" else "",
+                    "audio_base64": audio_base64,
                     "fps": round(fps, 1),
                     "hand_count": hand_count,
                     "status": "RECOGNIZING",

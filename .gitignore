@@ -36,6 +36,8 @@ speech_cache/
 # Trained model artifacts & media
 trained_models/
 *.blend*
+create_naruto.py
+naruto_3d_render.png
 
 # System files
 .DS_Store

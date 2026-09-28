@@ -9,8 +9,19 @@ export const recognitionService = {
     return response.data;
   },
 
-  async testSpeech(text?: string, lang: string = 'te'): Promise<{ status: string; spoken: string; lang: string }> {
-    const response = await api.post('/api/recognition/speech/test', { text, lang });
+  async testSpeech(
+    text?: string,
+    lang: string = 'te'
+  ): Promise<{ status: string; spoken: string; lang: string; audio_base64?: string }> {
+    const response = await api.post<{ status: string; spoken: string; lang: string; audio_base64?: string }>(
+      '/api/recognition/speech/test',
+      { text, lang }
+    );
     return response.data;
+  },
+
+  getAudioStreamUrl(text: string, lang: string = 'te'): string {
+    const encoded = encodeURIComponent(text);
+    return `/api/recognition/speech/stream?text=${encoded}&lang=${lang}`;
   },
 };
