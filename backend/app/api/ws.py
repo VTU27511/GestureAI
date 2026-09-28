@@ -222,20 +222,34 @@ async def ws_recognition(
         last_logged_gesture = None
         last_log_time = 0.0
         voice_language = "te"  # Default to fluent Telugu speech
+        voice_gender = "female" # Default to female voice
+        active_threshold = 0.65 # 65% gate (much higher accuracy and responsiveness)
 
-        # Background listener for stop/start/language controls
+        # Temporal smoothing buffer for stable detection
+        recent_preds = []
+
+        # Background listener for stop/start/language/gender/threshold controls
         async def message_listener():
-            nonlocal is_running, voice_language
+            nonlocal is_running, voice_language, voice_gender, active_threshold
             try:
                 while True:
                     text = await websocket.receive_text()
                     msg = json.loads(text)
-                    if msg.get("action") == "stop":
+                    action = msg.get("action")
+                    if action == "stop":
                         is_running = False
-                    elif msg.get("action") == "start":
+                    elif action == "start":
                         is_running = True
-                    elif msg.get("action") == "set_language":
+                    elif action == "set_language":
                         voice_language = msg.get("language", "te")
+                    elif action == "set_gender":
+                        voice_gender = msg.get("gender", "female")
+                    elif action == "set_threshold":
+                        try:
+                            raw_t = float(msg.get("threshold", 65))
+                            active_threshold = raw_t / 100.0 if raw_t > 1.0 else raw_t
+                        except Exception:
+                            pass
             except Exception:
                 pass
 
@@ -280,7 +294,14 @@ async def ws_recognition(
                         pred_name, pred_conf = MLService.predict(db, user.id, normalized)
 
                         confidence = pred_conf
-                        if pred_conf >= speech_engine.confidence_threshold:
+
+                        # Temporal smoothing: add to rolling window
+                        recent_preds.append((pred_name, pred_conf))
+                        if len(recent_preds) > 4:
+                            recent_preds.pop(0)
+
+                        # Check dominant prediction in recent frames
+                        if pred_conf >= active_threshold and pred_name != "UNKNOWN":
                             detected_gesture = pred_name
                             g_obj = gesture_map.get(pred_name)
                             if g_obj:
@@ -290,16 +311,17 @@ async def ws_recognition(
                                 meaning = pred_name
                                 speech_text = pred_name
 
-                            # Get fluent translations
+                            # Get fluent translations for Telugu, Tamil, and English
                             telugu_text = speech_engine.to_fluent_telugu(detected_gesture, speech_text)
                             tamil_text = speech_engine.to_fluent_tamil(detected_gesture, speech_text)
 
-                            # Fluent Speech Output (Telugu, Tamil, or English)
+                            # Fluent Speech Output (with male/female voice selection)
                             res = speech_engine.process_recognition(
                                 detected_gesture,
                                 speech_text,
                                 confidence,
-                                language=voice_language
+                                language=voice_language,
+                                gender=voice_gender
                             )
                             was_spoken = res.was_spoken
                             spoken_phrase = res.spoken_phrase
@@ -324,14 +346,20 @@ async def ws_recognition(
                                     print(f"[Log Error] {e}")
                         else:
                             detected_gesture = "UNKNOWN"
+                else:
+                    recent_preds.clear()
 
                 # Draw skeleton annotations
                 annotated = hand_detector.draw_landmarks(frame, results)
 
                 # Draw HUD prediction overlay on frame
+                hud_label = f"Gesture: {detected_gesture} ({round(confidence * 100, 1)}%)"
+                if detected_gesture == "YOU":
+                    hud_label = f"Gesture: YOU (మీరు / நீங்கள்) ({round(confidence * 100, 1)}%)"
+
                 cv2.putText(
                     annotated,
-                    f"Gesture: {detected_gesture} ({round(confidence * 100, 1)}%)",
+                    hud_label,
                     (15, 35),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.8,
@@ -353,6 +381,7 @@ async def ws_recognition(
                     "telugu_text": telugu_text,
                     "tamil_text": tamil_text,
                     "voice_language": voice_language,
+                    "voice_gender": voice_gender,
                     "spoken_phrase": spoken_phrase if detected_gesture != "UNKNOWN" else "",
                     "audio_base64": audio_base64,
                     "fps": round(fps, 1),

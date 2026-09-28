@@ -11,17 +11,18 @@ export const recognitionService = {
 
   async testSpeech(
     text?: string,
-    lang: string = 'te'
-  ): Promise<{ status: string; spoken: string; lang: string; audio_base64?: string }> {
-    const response = await api.post<{ status: string; spoken: string; lang: string; audio_base64?: string }>(
+    lang: string = 'te',
+    gender: 'female' | 'male' = 'female'
+  ): Promise<{ status: string; spoken: string; lang: string; gender?: string; audio_base64?: string }> {
+    const response = await api.post<{ status: string; spoken: string; lang: string; gender?: string; audio_base64?: string }>(
       '/api/recognition/speech/test',
-      { text, lang }
+      { text, lang, gender }
     );
     return response.data;
   },
 
-  getAudioStreamUrl(text: string, lang: string = 'te'): string {
+  getAudioStreamUrl(text: string, lang: string = 'te', gender: 'female' | 'male' = 'female'): string {
     const encoded = encodeURIComponent(text);
-    return `/api/recognition/speech/stream?text=${encoded}&lang=${lang}`;
+    return `/api/recognition/speech/stream?text=${encoded}&lang=${lang}&gender=${gender}`;
   },
 };

@@ -96,12 +96,31 @@ class MLService:
                 detail=f"Insufficient training samples ({len(X_list)} found). Please capture at least 5-10 samples."
             )
 
+        # Data Augmentation: add jittered and scaled variations to boost accuracy across hand distances and angles
+        augmented_X = []
+        augmented_y = []
+        for x_vec, label in zip(X_list, y_list):
+            augmented_X.append(x_vec)
+            augmented_y.append(label)
+            # Scale variation (+3%, -3%)
+            augmented_X.append((x_vec * 1.03).astype(np.float32))
+            augmented_y.append(label)
+            augmented_X.append((x_vec * 0.97).astype(np.float32))
+            augmented_y.append(label)
+            # Natural micro-jitter (noise std=0.012)
+            noise = np.random.normal(0, 0.012, size=x_vec.shape).astype(np.float32)
+            augmented_X.append((x_vec + noise).astype(np.float32))
+            augmented_y.append(label)
+
+        X_list = augmented_X
+        y_list = augmented_y
+
         # If user has only 1 gesture category, generate a negative 'NO_GESTURE' class with perturbed noise
         unique_labels = list(set(y_list))
         if len(unique_labels) == 1:
             base_class = unique_labels[0]
             # Add synthetic neutral/no-gesture baseline
-            for _ in range(max(10, len(X_list))):
+            for _ in range(max(15, len(X_list) // 3)):
                 noise = np.random.uniform(-0.15, 0.15, size=len(X_list[0])).astype(np.float32)
                 X_list.append(noise)
                 y_list.append("NO_GESTURE")
@@ -123,7 +142,7 @@ class MLService:
         # 3. Train/Test Split
         if len(X) >= 10:
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=y
+                X, y, test_size=0.15, random_state=42, stratify=y
             )
         else:
             X_train, X_test, y_train, y_test = X, X, y, y
@@ -135,7 +154,7 @@ class MLService:
         elif model_type_upper == "KNN":
             clf = KNeighborsClassifier(n_neighbors=min(3, len(X_train)))
         else:
-            clf = RandomForestClassifier(n_estimators=100, max_depth=15, random_state=42, n_jobs=-1)
+            clf = RandomForestClassifier(n_estimators=120, max_depth=16, min_samples_split=2, random_state=42, n_jobs=-1)
 
         clf.fit(X_train, y_train)
 

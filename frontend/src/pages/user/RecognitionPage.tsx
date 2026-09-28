@@ -37,10 +37,12 @@ export const RecognitionPage: React.FC = () => {
   const [tamilText, setTamilText] = useState<string>('');
   const [fps, setFps] = useState<number>(0);
   const [handCount, setHandCount] = useState<number>(0);
-  const [threshold, setThreshold] = useState<number>(85); // 85% default
+  const [threshold, setThreshold] = useState<number>(65); // 65% optimal default for fast, accurate recognition
 
-  // Voice Language Preference (Telugu default, now with Tamil and English)
+  // Voice Language Preference (Telugu, Tamil, English)
   const [voiceLanguage, setVoiceLanguage] = useState<'te' | 'ta' | 'en'>('te');
+  // Voice Gender Preference (Female / Male)
+  const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const [isTestingVoice, setIsTestingVoice] = useState(false);
 
   // Connection state
@@ -96,6 +98,20 @@ export const RecognitionPage: React.FC = () => {
     }
   };
 
+  const handleGenderChange = (gender: 'female' | 'male') => {
+    setVoiceGender(gender);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ action: 'set_gender', gender }));
+    }
+  };
+
+  const handleThresholdChange = (val: number) => {
+    setThreshold(val);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ action: 'set_threshold', threshold: val }));
+    }
+  };
+
   const testVoice = async () => {
     setIsTestingVoice(true);
     const phrases: Record<string, string> = {
@@ -106,16 +122,16 @@ export const RecognitionPage: React.FC = () => {
     const phrase = phrases[voiceLanguage] || phrases.te;
 
     try {
-      const res = await recognitionService.testSpeech(phrase, voiceLanguage);
+      const res = await recognitionService.testSpeech(phrase, voiceLanguage, voiceGender);
       if (res && res.audio_base64) {
         playAudio(res.audio_base64);
       } else {
-        const streamUrl = recognitionService.getAudioStreamUrl(phrase, voiceLanguage);
+        const streamUrl = recognitionService.getAudioStreamUrl(phrase, voiceLanguage, voiceGender);
         playAudio(undefined, streamUrl);
       }
     } catch (err) {
       console.error('Test speech error', err);
-      const streamUrl = recognitionService.getAudioStreamUrl(phrase, voiceLanguage);
+      const streamUrl = recognitionService.getAudioStreamUrl(phrase, voiceLanguage, voiceGender);
       playAudio(undefined, streamUrl);
     } finally {
       setTimeout(() => setIsTestingVoice(false), 1200);
@@ -141,8 +157,10 @@ export const RecognitionPage: React.FC = () => {
       setConnStatus('CONNECTED');
       setWsError(null);
       setIsRecognizing(true);
-      // Configure active voice language
+      // Configure voice settings & threshold
       ws.send(JSON.stringify({ action: 'set_language', language: voiceLanguage }));
+      ws.send(JSON.stringify({ action: 'set_gender', gender: voiceGender }));
+      ws.send(JSON.stringify({ action: 'set_threshold', threshold }));
     };
 
     ws.onmessage = (event) => {
@@ -416,12 +434,12 @@ export const RecognitionPage: React.FC = () => {
                 <h3 className="card-title" style={{ fontSize: '1.05rem' }}>Voice Speech Engine</h3>
               </div>
               <span className="badge badge-emerald" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Sparkles size={11} /> {voiceLanguage === 'te' ? 'Fluent Telugu Active' : voiceLanguage === 'ta' ? 'Fluent Tamil Active' : 'English Active'}
+                <Sparkles size={11} /> {voiceLanguage === 'te' ? 'Telugu' : voiceLanguage === 'ta' ? 'Tamil' : 'English'} ({voiceGender === 'female' ? '👩 Female' : '👨 Male'})
               </span>
             </div>
 
             {/* Language Selector Tabs */}
-            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.65rem' }}>
               <button
                 type="button"
                 className={`btn btn-sm ${voiceLanguage === 'te' ? 'btn-primary' : 'btn-secondary'}`}
@@ -483,6 +501,49 @@ export const RecognitionPage: React.FC = () => {
               </button>
             </div>
 
+            {/* Voice Gender Switcher (Female / Male) */}
+            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
+              <button
+                type="button"
+                className={`btn btn-sm ${voiceGender === 'female' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.82rem',
+                  padding: '0.4rem',
+                  background: voiceGender === 'female' ? 'linear-gradient(135deg, #ec4899, #db2777)' : undefined,
+                  borderColor: voiceGender === 'female' ? '#ec4899' : undefined
+                }}
+                onClick={() => handleGenderChange('female')}
+              >
+                <span>👩</span>
+                <span style={{ fontWeight: 700 }}>Female Voice</span>
+              </button>
+
+              <button
+                type="button"
+                className={`btn btn-sm ${voiceGender === 'male' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.82rem',
+                  padding: '0.4rem',
+                  background: voiceGender === 'male' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : undefined,
+                  borderColor: voiceGender === 'male' ? '#3b82f6' : undefined
+                }}
+                onClick={() => handleGenderChange('male')}
+              >
+                <span>👨</span>
+                <span style={{ fontWeight: 700 }}>Male Voice</span>
+              </button>
+            </div>
+
             {/* Live Fluent Speech Output Box */}
             <div style={{
               background: 'rgba(16, 185, 129, 0.08)',
@@ -507,7 +568,7 @@ export const RecognitionPage: React.FC = () => {
                   ? 'Fluent Telugu Speech Output (తెలుగు)'
                   : voiceLanguage === 'ta'
                   ? 'Fluent Tamil Speech Output (தமிழ்)'
-                  : 'English Speech Output'}
+                  : 'English Speech Output'} ({voiceGender === 'female' ? 'Female' : 'Male'})
               </div>
 
               <div style={{
@@ -554,10 +615,10 @@ export const RecognitionPage: React.FC = () => {
                   {isTestingVoice
                     ? (voiceLanguage === 'te' ? 'వాయిస్ ప్లే అవుతోంది...' : voiceLanguage === 'ta' ? 'குரல் ஒலிக்கிறது...' : 'Playing voice...')
                     : (voiceLanguage === 'te'
-                        ? '🔊 Test Telugu Voice (తెలుగు వాయిస్ వినండి)'
+                        ? `🔊 Test Telugu ${voiceGender === 'female' ? 'Female (స్త్రీ)' : 'Male (పురుష)'} Voice`
                         : voiceLanguage === 'ta'
-                        ? '🔊 Test Tamil Voice (தமிழ் குரல் கேட்கவும்)'
-                        : '🔊 Test English Voice')}
+                        ? `🔊 Test Tamil ${voiceGender === 'female' ? 'Female (பெண்)' : 'Male (ஆண்)'} Voice`
+                        : `🔊 Test English ${voiceGender === 'female' ? 'Female' : 'Male'} Voice`)}
                 </span>
               </button>
             </div>
@@ -574,16 +635,16 @@ export const RecognitionPage: React.FC = () => {
             </div>
 
             <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '0.75rem' }}>
-              Predictions with confidence below {threshold}% will display as UNKNOWN and will not trigger voice synthesis.
+              Optimized at 60-70% for real-time responsiveness. Predictions below {threshold}% display as UNKNOWN.
             </p>
 
             <input
               type="range"
-              min="50"
-              max="98"
+              min="40"
+              max="95"
               step="1"
               value={threshold}
-              onChange={(e) => setThreshold(Number(e.target.value))}
+              onChange={(e) => handleThresholdChange(Number(e.target.value))}
               style={{ width: '100%', accentColor: 'var(--accent-cyan)', cursor: 'pointer' }}
             />
           </div>

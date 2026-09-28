@@ -75,17 +75,19 @@ from fastapi.responses import FileResponse
 class SpeechTestRequest(BaseModel):
     text: Optional[str] = None
     lang: Optional[str] = "te"
+    gender: Optional[str] = "female"
 
 
 @router.post("/speech/test")
 def test_speech(req: SpeechTestRequest):
     """
-    Synthesizes fluent Telugu, Tamil, or English speech.
+    Synthesizes fluent Telugu, Tamil, or English speech with Male/Female voice selection.
     Returns audio_base64 for immediate browser playback AND plays on host system.
     """
     from app.services.speech_service import SpeechEngine
     engine = SpeechEngine.get_instance()
     lang = req.lang or "te"
+    gender = req.gender or "female"
 
     default_texts = {
         "te": "నమస్కారం! గెస్చర్ ఏఐ తెలుగు వాయిస్ అద్భుతంగా పనిచేస్తోంది.",
@@ -95,7 +97,7 @@ def test_speech(req: SpeechTestRequest):
 
     raw_text = req.text or default_texts.get(lang, "Hello! Welcome to GestureAI.")
     utterance = engine.to_fluent_phrase("", raw_text, language=lang)
-    audio_path, audio_b64 = engine.get_synthesized_audio(utterance, lang=lang)
+    audio_path, audio_b64 = engine.get_synthesized_audio(utterance, lang=lang, gender=gender)
 
     if audio_path:
         engine._play_audio_file(audio_path)
@@ -104,19 +106,20 @@ def test_speech(req: SpeechTestRequest):
         "status": "ok",
         "spoken": utterance,
         "lang": lang,
+        "gender": gender,
         "audio_base64": audio_b64
     }
 
 
 @router.get("/speech/stream")
-def stream_speech(text: str, lang: str = "te"):
+def stream_speech(text: str, lang: str = "te", gender: str = "female"):
     """
     Streams synthesized MP3 audio directly to browser HTML5 Audio player.
     """
     from app.services.speech_service import SpeechEngine
     engine = SpeechEngine.get_instance()
     utterance = engine.to_fluent_phrase("", text, language=lang)
-    audio_path, _ = engine.get_synthesized_audio(utterance, lang=lang)
+    audio_path, _ = engine.get_synthesized_audio(utterance, lang=lang, gender=gender)
     if audio_path and os.path.exists(audio_path):
-        return FileResponse(audio_path, media_type="audio/mpeg", filename=f"speech_{lang}.mp3")
+        return FileResponse(audio_path, media_type="audio/mpeg", filename=f"speech_{lang}_{gender}.mp3")
     return {"error": "Failed to synthesize speech"}
