@@ -33,6 +33,10 @@ yarn-error.log*
 backend/speech_cache/
 speech_cache/
 
+# Trained model artifacts & media
+trained_models/
+*.blend*
+
 # System files
 .DS_Store
 Thumbs.db

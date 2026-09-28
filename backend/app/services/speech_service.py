@@ -4,6 +4,21 @@ import queue
 import hashlib
 import threading
 from typing import Optional, Tuple
+from collections import namedtuple
+
+try:
+    import pygame
+except Exception:
+    pygame = None
+
+class SpeechResult(namedtuple("SpeechResult", ["was_spoken", "spoken_phrase"])):
+    """Dual compatibility: acts both as a 2-tuple (was_spoken, spoken_phrase) and boolean (was_spoken)."""
+    def __bool__(self):
+        return self.was_spoken
+    def __eq__(self, other):
+        if isinstance(other, bool):
+            return self.was_spoken == other
+        return super().__eq__(other)
 
 TELUGU_PHRASEBOOK = {
     "HELLO": "నమస్కారం! బాగున్నారా?",
@@ -51,6 +66,14 @@ class SpeechEngine:
 
         self.cache_dir = os.path.join(os.path.dirname(__file__), "..", "..", "speech_cache")
         os.makedirs(self.cache_dir, exist_ok=True)
+
+        if pygame is not None:
+            try:
+                pygame.init()
+                if not pygame.mixer.get_init():
+                    pygame.mixer.init()
+            except Exception as e:
+                print(f"[Pygame Init Warning] {e}")
 
         self.queue: queue.Queue = queue.Queue(maxsize=10)
         self.worker_thread = threading.Thread(target=self._speech_worker, daemon=True)
@@ -118,19 +141,42 @@ class SpeechEngine:
         return speech_text
 
     def _play_audio_file(self, file_path: str):
-        """Play synthesized audio file via pygame mixer."""
+        """Play synthesized audio file via native Windows Media Player with pygame fallback."""
+        if not file_path or not os.path.exists(file_path):
+            return False
+
+        abs_path = os.path.abspath(file_path)
+
+        # 1. Native Windows Media Player (100% reliable on Windows)
         try:
-            import pygame
-            if not pygame.mixer.get_init():
-                pygame.mixer.init()
-            pygame.mixer.music.load(file_path)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                time.sleep(0.04)
+            import pythoncom
+            pythoncom.CoInitialize()
+            import win32com.client
+            wmp = win32com.client.Dispatch("WMPlayer.OCX")
+            media = wmp.newMedia(abs_path)
+            wmp.currentPlaylist.clear()
+            wmp.currentPlaylist.appendItem(media)
+            wmp.controls.play()
+            time.sleep(0.15)
             return True
         except Exception as e:
-            print(f"[Speech Playback Error] {e}")
-            return False
+            pass
+
+        # 2. Fallback: Pygame mixer
+        if pygame is not None:
+            try:
+                pygame.init()
+                if not pygame.mixer.get_init():
+                    pygame.mixer.init()
+                pygame.mixer.music.load(abs_path)
+                pygame.mixer.music.play()
+                while pygame.mixer.music.get_busy():
+                    time.sleep(0.04)
+                return True
+            except Exception as e:
+                pass
+
+        return False
 
     def _synthesize_telugu_gtts(self, text: str) -> Optional[str]:
         """Synthesizes fluent native Telugu speech via gTTS and caches locally."""
@@ -217,19 +263,19 @@ class SpeechEngine:
         speech_text: str,
         confidence: float,
         language: str = "te"
-    ) -> Tuple[bool, str]:
+    ) -> SpeechResult:
         """
         Applies duplicate prevention, cooldown, and speaks in fluent Telugu or English.
-        Returns (was_spoken, spoken_phrase).
+        Returns SpeechResult(was_spoken, spoken_phrase) compatible with both tuples and booleans.
         """
         if confidence < self.confidence_threshold:
-            return False, ""
+            return SpeechResult(False, "")
 
         if not gesture_name or gesture_name.upper() == "UNKNOWN":
-            return False, ""
+            return SpeechResult(False, "")
 
         if not speech_text or not speech_text.strip():
-            return False, ""
+            return SpeechResult(False, "")
 
         # Determine utterance based on language
         if language == "te":
@@ -244,15 +290,15 @@ class SpeechEngine:
             self.last_gesture = gesture_name
             self.last_speak_time = now
             self.speak(utterance, lang=language)
-            return True, utterance
+            return SpeechResult(True, utterance)
 
         # If same gesture, repeat after cooldown
         if (now - self.last_speak_time) >= self.speech_cooldown:
             self.last_speak_time = now
             self.speak(utterance, lang=language)
-            return True, utterance
+            return SpeechResult(True, utterance)
 
-        return False, utterance
+        return SpeechResult(False, utterance)
 
     def reset_state(self):
         """Reset history on session stop/start."""
