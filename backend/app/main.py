@@ -49,6 +49,27 @@ def root():
 def on_startup():
     try:
         Base.metadata.create_all(bind=engine)
+        # Auto-seed initial admin user if database is empty
+        try:
+            from app.database.session import SessionLocal
+            from app.models.user import User, UserRole
+            from app.services.auth_service import hash_password
+            db = SessionLocal()
+            if db.query(User).count() == 0:
+                admin_user = User(
+                    name="Admin",
+                    username="admin",
+                    email="admin@gestureai.com",
+                    password_hash=hash_password("admin123"),
+                    role=UserRole.ADMIN,
+                    is_active=True
+                )
+                db.add(admin_user)
+                db.commit()
+                print("[Database] Seeded initial admin user: username='admin', password='admin123'")
+            db.close()
+        except Exception as seed_err:
+            print(f"[Database Seeding Notice] {seed_err}")
     except Exception as e:
         print(f"[Startup Warning] Could not auto-create tables: {e}")
 
