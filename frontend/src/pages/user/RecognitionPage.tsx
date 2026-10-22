@@ -145,9 +145,23 @@ export const RecognitionPage: React.FC = () => {
     }
 
     const token = localStorage.getItem('gestureai_token');
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.port === "5173" ? `${window.location.hostname}:8000` : window.location.host;
-    const wsUrl = `${protocol}//${host}/ws/recognition?token=${token}`;
+    let wsUrl = '';
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (apiUrl) {
+      try {
+        const parsed = new URL(apiUrl, window.location.href);
+        const protocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${protocol}//${parsed.host}/ws/recognition?token=${token}`;
+      } catch {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.port === "5173" ? `${window.location.hostname}:8000` : window.location.host;
+        wsUrl = `${protocol}//${host}/ws/recognition?token=${token}`;
+      }
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.port === "5173" ? `${window.location.hostname}:8000` : window.location.host;
+      wsUrl = `${protocol}//${host}/ws/recognition?token=${token}`;
+    }
 
     setConnStatus('RECONNECTING');
     const ws = new WebSocket(wsUrl);

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { gestureService, ActiveModelInfo } from '../../services/gestureService';
 import { Gesture } from '../../types';
@@ -80,9 +80,23 @@ export const TrainingPage: React.FC = () => {
     }
 
     const token = localStorage.getItem('gestureai_token');
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.port === "5173" ? `${window.location.hostname}:8000` : window.location.host; // e.g. localhost:5173 (proxied) or direct backend
-    const wsUrl = `${protocol}//${host}/ws/training/${activeGesture.id}?token=${token}`;
+    let wsUrl = '';
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (apiUrl) {
+      try {
+        const parsed = new URL(apiUrl, window.location.href);
+        const protocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${protocol}//${parsed.host}/ws/training/${activeGesture.id}?token=${token}`;
+      } catch {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.port === "5173" ? `${window.location.hostname}:8000` : window.location.host;
+        wsUrl = `${protocol}//${host}/ws/training/${activeGesture.id}?token=${token}`;
+      }
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.port === "5173" ? `${window.location.hostname}:8000` : window.location.host;
+      wsUrl = `${protocol}//${host}/ws/training/${activeGesture.id}?token=${token}`;
+    }
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;

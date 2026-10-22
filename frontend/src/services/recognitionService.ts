@@ -23,6 +23,7 @@ export const recognitionService = {
 
   getAudioStreamUrl(text: string, lang: string = 'te', gender: 'female' | 'male' = 'female'): string {
     const encoded = encodeURIComponent(text);
-    return `/api/recognition/speech/stream?text=${encoded}&lang=${lang}&gender=${gender}`;
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+    return `${baseUrl}/api/recognition/speech/stream?text=${encoded}&lang=${lang}&gender=${gender}`;
   },
 };
